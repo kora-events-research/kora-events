@@ -253,6 +253,9 @@ def main():
                 kickoff_utc = datetime(int(y_), int(m_), int(d_), int(hh), int(mm),
                                        tzinfo=ZoneInfo("Europe/London")).astimezone(timezone.utc)
         kickoff_passed = (kickoff_utc <= now_utc) if kickoff_utc else None
+        # مباراة انطلقت بالفعل (بتوقيت UTC الفعلي لحظة التوليد) لا تُعرض كقادمة إطلاقًا.
+        if kickoff_passed is True:
+            continue
         kick_london = kickoff_utc.astimezone(ZoneInfo("Europe/London")) if kickoff_utc else None
         hs, as_ = state(home), state(away)
         ref_hist = df[df["referee"] == ref] if ref else df.iloc[0:0]
@@ -306,6 +309,23 @@ def main():
                     "probs": {e: p["model"] for e, p in f["probs"].items()},
                 }
     FORECAST_LOG.parent.mkdir(exist_ok=True)
+    # إعادة الجدولة: إن ظهرت مباراة قادمة بنفس الفريقين بتاريخ مختلف عن مدخلة لم تُلعب بعد،
+    # تُوسم القديمة superseded ويُربط الجديد بها؛ الاحتمالات الأصلية لا تُمس أبدًا.
+    played_keys = set()
+    for i, row in df.iterrows():
+        played_keys.add((str(row["match_datetime"])[:10], row["home_team"], row["away_team"]))
+    pending_pairs = {}
+    for k, e in log.items():
+        if not e.get("status") and (e["date"], e["home"], e["away"]) not in played_keys:
+            pending_pairs.setdefault((e["home"], e["away"]), []).append(k)
+    for f in fixtures:
+        new_key = f"{f['date']}|{f['home']}|{f['away']}"
+        for old_key in pending_pairs.get((f["home"], f["away"]), []):
+            if old_key != new_key and not log[old_key].get("status"):
+                log[old_key]["status"] = "superseded"
+                log[old_key]["superseded_by"] = new_key
+                if new_key in log and "supersedes" not in log[new_key]:
+                    log[new_key]["supersedes"] = old_key
     FORECAST_LOG.write_text(json.dumps(log, ensure_ascii=False, indent=1), encoding="utf-8")
 
     results = []
@@ -314,6 +334,8 @@ def main():
         k = (str(row["match_datetime"])[:10], row["home_team"], row["away_team"])
         df_by_key[k] = i
     for key, entry in sorted(log.items()):
+        if entry.get("status") == "superseded":
+            continue  # لا تُقيَّم ولا تُحتسب ضمن المعلّق؛ مُلغاة بإعادة الجدولة
         idx = df_by_key.get((entry["date"], entry["home"], entry["away"]))
         if idx is None:
             continue  # لم تُلعب بعد أو لم تصل نتيجتها من المصدر بعد
