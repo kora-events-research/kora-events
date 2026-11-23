@@ -84,25 +84,20 @@ python3 src/build_db.py && python3 src/export_site.py
 ## مصادر الجدولة وأساس العرض — Schedule sources and display basis
 
 تُجمع النتائج والأحداث من Football-Data.co.uk فقط، ولا نعيد نشر ملفاته الخام.
-حقائق الجدولة (الفريقان والتاريخ والوقت) من ملف fixtures لدى Football-Data،
-ومكمّلة من لوحة ESPN العامة عندما يسبق نشرها. لا نزعم أي ترخيص من ESPN:
-واجهته العامة ليست مصدرًا مرخصًا رسميًا، ونقرأ منها حقائق واقعية فقط بحجم
-صغير (11 طلبًا لكل تشغيل). في الاتحاد الأوروبي قضت محكمة العدل في C-604/10
-(Football Dataco v Yahoo) بأن قوائم مباريات الدوري لا يحميها حق قواعد
-البيانات، لكن ذلك لا يحسم الشروط التعاقدية لـESPN؛ إن تعارض استخدامنا مع
-شروط المصدر نعود لملف جدولة Football-Data وحده. لا ننسخ عرض ESPN أو أي
-محتوى تحريري منه، ولا نقرأ ولا نخزن ولا نعرض أي حقول أسعار
-(odds/pickcenter) من ESPN أو غيره إطلاقًا.
+حقائق الجدولة (الفريقان والتاريخ والوقت) من ملف fixtures لدى Football-Data
+وحده. كنا نكملها مؤقتًا من لوحة ESPN العامة، لكننا أوقفنا ذلك نهائيًا في
+2026-11-24 بعد مراجعة شروط استخدام ديزني
+(https://disneytermsofuse.com/english/ — تغطي منتجات ESPN صراحة، والبند x من
+الاستخدامات المحظورة يمنع الوصول أو النسخ أو الاستخراج بروبوت أو سكربت أو أي
+وسيلة آلية، بما في ذلك بناء أي مجموعة بيانات). لا نقرأ ولا نخزن ولا نعرض
+أي حقول أسعار (odds/pickcenter) من أي مصدر إطلاقًا.
 
 Results and events come only from Football-Data.co.uk, whose raw files we do
 not republish. Fixture facts (teams, date, time) come from Football-Data's
-fixtures file, supplemented by ESPN's public scoreboard when it publishes
-earlier. We claim no license from ESPN: its public endpoint is not an
-official licensed source, and we read only small-volume factual data from
-it (11 requests per run). In the EU the CJEU held in C-604/10 (Football
-Dataco v Yahoo) that league fixture lists are not protected by database
-right, but that does not settle ESPN's contractual terms; if our use
-conflicts with the source's terms we fall back to Football-Data's fixture
-file alone. We copy neither ESPN's presentation nor any editorial content,
-and never read, store, or display any odds fields from ESPN or any other
-source.
+fixtures file alone. We briefly supplemented them from ESPN's public
+scoreboard, but stopped permanently on 2026-11-24 after reviewing Disney's
+Terms of Use (https://disneytermsofuse.com/english/ — expressly covering
+ESPN-branded products; prohibited-uses clause x bans accessing, monitoring,
+copying or extracting the products by robot, script or other automated
+means, including building any dataset). We never read, store, or display
+any odds fields from any source.

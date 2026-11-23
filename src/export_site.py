@@ -5,13 +5,13 @@ export_site.py - توليد data/snapshot.json الذي يغذي الموقع ا
 
 ينتج لقطة واحدة مختومة بوقت التوليد تشمل: تعريفات الأحداث وتكرارها،
 نتائج التجربة الزمنية، توقعات المباريات القادمة (من ملف fixtures لدى
-Football-Data ومكملًا من جدولة ESPN العامة)، التكرارات المشتركة التجريبية
+Football-Data وحده؛ توقف مكمل ESPN في 2026-11-24 لأسباب تعاقدية)، التكرارات المشتركة التجريبية
 لمجموعات الأحداث (وصفية فقط)، وسجل التوقعات المحفوظة قبل الانطلاق مع
 تقييمها بالنتائج الفعلية عند توفرها.
 
 الحدود الترخيصية: لا ننشر صفوفًا بمستوى المباراة (بيانات Football-Data الخام)،
-ولا أي بيانات أسعار/odds من ESPN إطلاقًا؛ نأخذ من ESPN حقائق الجدولة فقط
-(الفريقان والتاريخ والوقت) مع الإسناد.
+ولا أي بيانات أسعار/odds من أي مصدر إطلاقًا؛ جلب ESPN متوقف نهائيًا
+(شروط استخدام ديزني، البند x: حظر الاستخراج الآلي).
 
 التشغيل: python3 src/export_site.py
 """
@@ -36,6 +36,11 @@ DB = ROOT / "football_research.db"
 FIXTURES_URL = "https://football-data.co.uk/fixtures.csv"
 ESPN_SCOREBOARD = "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard?dates={}"
 ESPN_DAYS_AHEAD = 10
+# 2026-11-24: أوقفنا الجلب الآلي من ESPN نهائيًا. شروط استخدام ديزني
+# (https://disneytermsofuse.com/english/، تغطي منتجات ESPN صراحة، البند x من
+# الاستخدامات المحظورة) تحظر الوصول أو النسخ أو الاستخراج بوسائل آلية بما فيها
+# بناء أي مجموعة بيانات. الجدولة الآن من ملف Football-Data وحده.
+ESPN_ENABLED = False
 FORECAST_LOG = ROOT / "data" / "forecast_log.json"
 
 EVENT_LABELS = {k: v["label"] for k, v in EVENTS.items()}
@@ -224,12 +229,13 @@ def main():
     except Exception as exc:
         print(f"تعذر جلب fixtures لدى Football-Data: {exc}")
     fd_keys = {(r["date"], r["home"], r["away"]) for r in raw_fixtures}
-    try:
-        for r in fetch_espn_fixtures():
-            if (r["date"], r["home"], r["away"]) not in fd_keys:
-                raw_fixtures.append(r)
-    except Exception as exc:
-        print(f"تعذر جلب جدولة ESPN: {exc}")
+    if ESPN_ENABLED:
+        try:
+            for r in fetch_espn_fixtures():
+                if (r["date"], r["home"], r["away"]) not in fd_keys:
+                    raw_fixtures.append(r)
+        except Exception as exc:
+            print(f"تعذر جلب جدولة ESPN: {exc}")
 
     last_dt = df["match_datetime"].max()
     now_utc = datetime.now(timezone.utc)
@@ -331,13 +337,12 @@ def main():
             "generated_at_utc": gen_utc,
             "source": "https://football-data.co.uk/mmz4281/2627/E0.csv",
             "fixtures_source": FIXTURES_URL,
-            "fixtures_source_espn": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard",
             "train": int(split_idx), "test": int(n - split_idx),
             "notes": [
                 "لقطة ثابتة بوقت التوليد، وليست بثًا مباشرًا ولا تحديثًا لحظيًا.",
                 "أرقام البطاقات خاصة بمصدر Football-Data وتختلف عن العد الرسمي في بعض المباريات.",
                 "توقعات المباريات القادمة من نموذج أُعيد تدريبه على كل مباريات الموسم؛ قياس الدقة المنفصل موثق في قسم التجربة.",
-                "حقائق الجدولة (الفريقان والتاريخ والوقت) من Football-Data ومكملة من لوحة ESPN العامة مع الإسناد؛ لا تُقرأ ولا تُعرض أي أسعار من أي مصدر.",
+                "حقائق الجدولة (الفريقان والتاريخ والوقت) من ملف Football-Data وحده؛ أوقفنا جلب ESPN في 2026-11-24 لأن شروط استخدام ديزني تحظر الاستخراج الآلي. لا تُقرأ ولا تُعرض أي أسعار من أي مصدر.",
             ],
         },
         "events": freq,
