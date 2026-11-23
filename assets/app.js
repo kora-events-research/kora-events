@@ -116,7 +116,12 @@ const EVENT_LABEL_EN = {
 let LANG = localStorage.getItem("kora-lang") || "ar";
 let SNAP = null;
 
-const PCT = (p) => `${Math.round(p * 100)}%`;
+const PCT = (p) => {
+  const v = p * 100;
+  if (v > 99 && v < 100) return ">99%";
+  if (v > 0 && v < 1) return "<1%";
+  return `${Math.round(v)}%`;
+};
 
 async function boot() {
   applyLang();
