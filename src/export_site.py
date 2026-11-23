@@ -291,9 +291,12 @@ def main():
         if f["kickoff_passed"] is False and f["kickoff_utc"]:
             key = f"{f['date']}|{f['home']}|{f['away']}"
             if key not in log:
+                # أول تسجيل للتوقع يبقى كما هو نهائيًا؛ لا يُستبدل ولا يُحدَّث في أي تشغيل لاحق.
                 log[key] = {
                     "home": f["home"], "away": f["away"], "date": f["date"],
                     "kickoff_utc": f["kickoff_utc"], "forecast_at": gen_utc,
+                    "model_train_matches": n,
+                    "data_through": meta_row[1],
                     "probs": {e: p["model"] for e, p in f["probs"].items()},
                 }
     FORECAST_LOG.parent.mkdir(exist_ok=True)
@@ -312,9 +315,13 @@ def main():
         for e in EVENTS:
             events[e] = {"forecast": entry["probs"].get(e),
                          "actual": bool(y_all[e][idx] > 0.5)}
+        mi = entry.get("model_train_matches")
+        dt_ = entry.get("data_through")
         results.append({
             "home": entry["home"], "away": entry["away"], "date": entry["date"],
-            "forecast_at": entry["forecast_at"], "events": events,
+            "forecast_at": entry["forecast_at"],
+            "model_info": (f"نموذج مدرب على {mi} مباراة حتى {dt_}" if mi else None),
+            "events": events,
         })
 
     snap = {

@@ -23,6 +23,7 @@ const I18N = {
     demoHeading: "أمثلة توضيحية استرجاعية (مباريات لُعبت بالفعل — لا تدخل تقييم الدقة إطلاقًا)",
     techHeading: "التفاصيل التقنية (تعريف الأحداث، قياس الدقة التجريبي، إعادة الإنتاج، الحدود)",
     tapToOpen: "اضغط لعرض التحليل",
+    ukTime: "بتوقيت بريطانيا (GMT)",
     referee: (f) => `الحكم: ${f.referee || "لم يُعلن"}`,
     flagLowTeam: "بيانات قليلة عن فريق",
     flagLowRef: "بيانات قليلة عن الحكم",
@@ -55,7 +56,7 @@ const I18N = {
       "لقطة ثابتة تُحدَّث دوريًا، وليست بثًا حيًا.",
       "العينة صغيرة (موسم واحد، دوري واحد)، والنتائج قابلة للتغير مع تراكم البيانات.",
       "بحث مفتوح للفهم والتجربة، وليس نظام تنبؤ مضمونًا.",
-      "حقائق الجدولة (الفريقان والتاريخ والوقت) معلومات واقعية تُعرض مع الإسناد لمصدرها؛ قضت محكمة العدل الأوروبية (القضية C-604/10) بأن قوائم مباريات الدوري لا يحميها حق قواعد البيانات. لا ننسخ عرض ESPN ولا أي بيانات أخرى منه، ولا تُقرأ ولا تُعرض أي أسعار من أي مصدر.",
+      "حقائق الجدولة (الفريقان والتاريخ والوقت) تُعرض مع الإسناد لمصدرها. لا نزعم أي ترخيص من ESPN: واجهته العامة ليست مصدرًا مرخصًا رسميًا، ونقرأ منها حقائق واقعية فقط بحجم صغير (لا نسخ لعرضه أو محتواه، ولا أسعار من أي مصدر إطلاقًا). في الاتحاد الأوروبي قضت محكمة العدل (C-604/10) بأن قوائم مباريات الدوري لا يحميها حق قواعد البيانات، لكن ذلك لا يحسم شروط ESPN التعاقدية؛ إن تعارض استخدامنا مع شروط المصدر نعود لملف جدولة Football-Data وحده.",
     ],
     notesEn: null,
     toggle: "English",
@@ -83,6 +84,7 @@ const I18N = {
     demoHeading: "Retrospective demo examples (already-played matches — never counted in accuracy evaluation)",
     techHeading: "Technical details (event definitions, experimental accuracy, reproduction, limits)",
     tapToOpen: "Tap to view analysis",
+    ukTime: "UK time (GMT)",
     referee: (f) => `Referee: ${f.referee || "not announced"}`,
     flagLowTeam: "Limited team data",
     flagLowRef: "Limited referee data",
@@ -115,7 +117,7 @@ const I18N = {
       "A fixed snapshot refreshed periodically, not a live feed.",
       "Small sample (one season, one league); results will shift as data accumulates.",
       "Open research for understanding and experimentation, not a guaranteed prediction system.",
-      "Fixture facts (teams, date, time) are factual information shown with attribution; the Court of Justice of the EU (case C-604/10) held that league fixture lists are not protected by database right. We copy neither ESPN's presentation nor any other ESPN data, and no odds are read or shown from any source.",
+      "Fixture facts (teams, date, time) are shown with attribution. We claim no license from ESPN: its public endpoint is not an official licensed source, and we read only small-volume factual data from it (no copying of its presentation or content, and no odds from any source, ever). In the EU the Court of Justice held (C-604/10) that league fixture lists are not protected by database right, but that does not settle ESPN's contractual terms; if our use conflicts with the source's terms we fall back to Football-Data's fixture file alone.",
     ],
     notesEn: null,
     toggle: "العربية",
@@ -227,7 +229,7 @@ function fixtureCard(f, s, T) {
   return `<details class="fixture-card">
     <summary>
       <span class="teams">${f.home} — ${f.away}</span>
-      <span class="when">${f.date} · ${f.time}</span>
+      <span class="when">${f.date} · ${f.time} ${T.ukTime}</span>
       <span class="tap">${T.tapToOpen}</span>
     </summary>
     <div class="fixture-body">
@@ -286,7 +288,7 @@ function render(s) {
       return `<div class="fixture-card result-card">
         <div class="teams">${r.home} — ${r.away}</div>
         <div class="when">${r.date}</div>
-        <div class="sub">${T.resForecast} (${r.forecast_at}) · ${T.resActual}:</div>
+        <div class="sub">${T.resForecast} (${r.forecast_at})${r.model_info ? " · " + r.model_info : ""} · ${T.resActual}:</div>
         ${rows}
       </div>`;
     }).join("");
