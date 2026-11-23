@@ -51,6 +51,7 @@ ESPN_TEAM_MAP = {
     "Manchester City": "Man City",
     "Manchester United": "Man United",
     "Newcastle United": "Newcastle",
+    "Nottingham Forest": "Nott'm Forest",
     "Tottenham Hotspur": "Tottenham",
 }
 
