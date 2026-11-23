@@ -8,6 +8,7 @@ const I18N = {
     freshness: (m) => `لقطة ثابتة — آخر تحديث: ${m.generated_at_utc} · بيانات حتى ${m.to} · ${m.matches} مباراة`,
     disclaimer: `<strong>تنبيه:</strong> هذه المنصة بحثية تعليمية. تعرض احتمالات إحصائية لأحداث المباريات (أهداف، بطاقات، ركنيات) وتقيس دقتها علنًا. لا تعرض أسعار مراهنات، ولا توصيات مراهنة، ولا أي إرشاد مالي. لا توجد توقعات مؤكدة في الرياضة؛ كل نسبة معروضة هنا احتمال قابل للخطأ، وقسم «قياس الدقة» يوثّق أخطاء النموذج بوضوح.`,
     hFixtures: "المباريات القادمة",
+    demoHeading: "أمثلة توضيحية استرجاعية — لا تدخل تقييم الدقة إطلاقًا",
     hintFixtures: "توقعات النموذج للمباريات المجدولة. أي توقع موثق قبل الانطلاق يُوسم بذلك صراحة مع وقت اللقطة، وأي تقدير وُلّد بعد موعد الانطلاق يُوسم «عرض توضيحي استرجاعي» ولا يدخل تقييم الدقة إطلاقًا.",
     hEvents: "الأحداث المُعرَّفة",
     hintEvents: "ستة أحداث قابلة للتحقق، مُعرَّفة تعريفًا تشغيليًا دقيقًا في الشيفرة المصدرية.",
@@ -49,6 +50,7 @@ const I18N = {
     freshness: (m) => `Fixed snapshot — last updated: ${m.generated_at_utc} · data through ${m.to} · ${m.matches} matches`,
     disclaimer: `<strong>Notice:</strong> this is a research and education platform. It shows statistical probabilities for match events (goals, cards, corners) and measures its accuracy openly. No betting odds, no betting advice, no financial guidance of any kind. There are no certain predictions in sport; every figure here is a fallible probability, and the accuracy section documents the model's errors plainly.`,
     hFixtures: "Upcoming fixtures",
+    demoHeading: "Retrospective demo examples — never counted in accuracy evaluation",
     hintFixtures: "Model estimates for scheduled matches. A genuine pre-kickoff forecast is labeled as such with its snapshot time; anything generated after the listed kickoff is labeled a retrospective demo and never enters accuracy evaluation.",
     hEvents: "Defined events",
     hintEvents: "Six checkable events, each with a precise operational definition in the source code.",
@@ -150,40 +152,45 @@ function render(s) {
     [...notes, ...T.limits].map((n) => `<li>${n}</li>`).join("");
 
   const fx = document.getElementById("fixtures");
-  if (!s.fixtures.length) {
-    fx.innerHTML = `<div class="notice small">${T.noFixtures}</div>`;
-  } else {
-    fx.innerHTML = s.fixtures
-      .map((f) => {
-        const flags = [];
-        if (f.low_team_data) flags.push(T.flagLowTeam);
-        if (f.low_ref_data) flags.push(T.flagLowRef);
-        const rows = Object.entries(f.probs)
-          .map(([e, p]) => {
-            const diff = Math.round((p.model - p.baseline) * 100);
-            const diffTxt = diff === 0 ? T.eqBase : (diff > 0 ? "+" : "") + diff + " " + T.ptsVsBase;
-            return `<div class="probrow">
-              <span class="lbl">${evLabel(e, s.events[e])}</span>
-              <span class="bar"><span style="width:${Math.round(p.model * 100)}%"></span></span>
-              <span class="num">${PCT(p.model)}</span>
-              <span class="sub">${diffTxt}</span>
-            </div>`;
-          })
-          .join("");
-        const tail = f.kickoff_passed === true
-          ? `<div class="flags">${T.retro(f)}</div>`
-          : f.kickoff_passed === false
-            ? `<div class="sub">${T.saved(f, m)}</div>`
-            : `<div class="sub">${T.current(m)}</div>`;
-        return `<div class="fixture-card">
-          <div class="teams">${f.home} — ${f.away}</div>
-          <div class="when">${f.date} · ${f.time} · ${T.referee(f)}</div>
-          ${flags.length ? `<div class="flags">⚠ ${flags.join(" · ")} — ${T.flagCareful}</div>` : ""}
-          ${rows}
-          ${tail}
+  const fxd = document.getElementById("fixtures-demo");
+  fxd.innerHTML = "";
+  const fixtureCard = (f) => {
+    const flags = [];
+    if (f.low_team_data) flags.push(T.flagLowTeam);
+    if (f.low_ref_data) flags.push(T.flagLowRef);
+    const rows = Object.entries(f.probs)
+      .map(([e, p]) => {
+        const diff = Math.round((p.model - p.baseline) * 100);
+        const diffTxt = diff === 0 ? T.eqBase : (diff > 0 ? "+" : "") + diff + " " + T.ptsVsBase;
+        return `<div class="probrow">
+          <span class="lbl">${evLabel(e, s.events[e])}</span>
+          <span class="bar"><span style="width:${Math.round(p.model * 100)}%"></span></span>
+          <span class="num">${PCT(p.model)}</span>
+          <span class="sub">${diffTxt}</span>
         </div>`;
       })
       .join("");
+    const tail = f.kickoff_passed === true
+      ? `<div class="flags">${T.retro(f)}</div>`
+      : f.kickoff_passed === false
+        ? `<div class="sub">${T.saved(f, m)}</div>`
+        : `<div class="sub">${T.current(m)}</div>`;
+    return `<div class="fixture-card">
+      <div class="teams">${f.home} — ${f.away}</div>
+      <div class="when">${f.date} · ${f.time} · ${T.referee(f)}</div>
+      ${flags.length ? `<div class="flags">⚠ ${flags.join(" · ")} — ${T.flagCareful}</div>` : ""}
+      ${rows}
+      ${tail}
+    </div>`;
+  };
+  const upcoming = s.fixtures.filter((f) => f.kickoff_passed !== true);
+  const retro = s.fixtures.filter((f) => f.kickoff_passed === true);
+  fx.innerHTML = upcoming.length
+    ? upcoming.map(fixtureCard).join("")
+    : `<div class="notice small">${T.noFixtures}</div>`;
+  if (retro.length) {
+    fxd.innerHTML = `<h3 class="demo-heading">${T.demoHeading}</h3>` +
+      retro.map(fixtureCard).join("");
   }
 
   document.getElementById("events").innerHTML = Object.entries(s.events)
