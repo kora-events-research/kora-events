@@ -7,7 +7,14 @@ fetch("data/snapshot.json", { cache: "no-store" })
       "تعذر تحميل بيانات اللقطة (data/snapshot.json)";
   });
 
-const PCT = (p) => (p == null ? "—" : Math.round(p * 100) + "%");
+// لا يُعرض 100% أو 0% أبدًا: كل تقدير نموذج منتهٍ وقابل للخطأ، والتقريب لا يحوّله إلى يقين.
+const PCT = (p) => {
+  if (p == null) return "—";
+  const v = p * 100;
+  if (v >= 99.95) return ">99.9%";
+  if (v <= 0.05) return "<0.1%";
+  return v.toFixed(1) + "%";
+};
 
 function render(s) {
   const m = s.meta;
@@ -44,7 +51,11 @@ function render(s) {
           <div class="when">${f.date} · ${f.time} · الحكم: ${f.referee || "لم يُعلن"} (${f.ref_prior_matches} مباريات سابقة في العينة)</div>
           ${flags.length ? `<div class="flags">⚠ ${flags.join(" · ")} — تعامل مع التوقع بحذر إضافي</div>` : ""}
           ${rows}
-          <div class="sub">توقع محفوظ قبل الانطلاق ضمن لقطة ${m.generated_at_utc}؛ سيُقيَّم بالنتيجة الفعلية في التحديث التالي.</div>
+          ${f.kickoff_passed === true
+            ? `<div class="flags">⚠ عرض توضيحي استرجاعي: وُلّد هذا التقدير بعد موعد انطلاق المباراة المعلن (${f.kickoff_london || "غير معروف"})، فهو ليس توقعًا مسبقًا موثقًا ولن يدخل تقييم دقة المنصة. التوقعات الموثقة قبل الانطلاق تبدأ من الجولة القادمة.</div>`
+            : f.kickoff_passed === false
+              ? `<div class="sub">توقع محفوظ قبل الانطلاق (${f.kickoff_london}) ضمن لقطة ${m.generated_at_utc}؛ سيُقيَّم بالنتيجة الفعلية في التحديث التالي.</div>`
+              : `<div class="sub">تقدير النموذج الحالي ضمن لقطة ${m.generated_at_utc}.</div>`}
         </div>`;
       })
       .join("");

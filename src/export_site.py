@@ -16,6 +16,7 @@ import pathlib
 import sqlite3
 import urllib.request
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 import numpy as np
 import pandas as pd
@@ -136,6 +137,15 @@ def main():
                         "ga5": avg("goals_against", last), "y5": avg("yellows", last),
                         "xg5": avg("xg_for", last), "ppg": avg("points", played)}
 
+            # موعد الانطلاق بتوقيت بريطانيا (توقيت ملف الجدولة لدى المصدر).
+            # لا يُوصف أي توقع بأنه «محفوظ قبل الانطلاق» إلا بمقارنة فعلية مع لحظة التوليد.
+            kickoff = None
+            if (fr.get("Time") or "").strip():
+                hh, mm = (fr.get("Time") or "00:00").strip().split(":")[:2]
+                kickoff = datetime(int(year), int(month), int(day), int(hh), int(mm),
+                                   tzinfo=ZoneInfo("Europe/London"))
+            now_utc = datetime.now(timezone.utc)
+            kickoff_passed = (kickoff <= now_utc) if kickoff else None
             hs, as_ = state(home), state(away)
             ref_hist = df[df["referee"] == ref]
             low_team = hs["played"] < 3 or as_["played"] < 3
@@ -158,6 +168,8 @@ def main():
                 "home": home, "away": away, "referee": ref or None,
                 "ref_prior_matches": int(len(ref_hist)),
                 "low_team_data": bool(low_team), "low_ref_data": bool(low_ref),
+                "kickoff_london": kickoff.strftime("%Y-%m-%d %H:%M %Z") if kickoff else None,
+                "kickoff_passed": kickoff_passed,
                 "probs": probs,
             })
     except Exception as exc:  # عدم توفر fixtures لا يوقف اللقطة
