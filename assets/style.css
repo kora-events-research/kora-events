@@ -256,3 +256,32 @@ code {
   border-top: 1px dashed #d9c98a;
   padding-top: 1rem;
 }
+
+.grp {
+  border-top: 1px dashed var(--line);
+  margin-top: 0.7rem;
+  padding-top: 0.6rem;
+}
+.grp-title { font-weight: 700; font-size: 0.85rem; }
+.grp-hint { color: var(--muted); font-size: 0.75rem; margin: 0.2rem 0 0.5rem; }
+.grp-ev {
+  display: inline-block;
+  font-size: 0.78rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  margin: 0.15rem;
+  cursor: pointer;
+  background: var(--card);
+}
+.grp-ev input { accent-color: var(--accent); }
+.grp-out {
+  background: var(--accent-soft);
+  border-radius: 8px;
+  padding: 0.5rem 0.7rem;
+  margin-top: 0.5rem;
+  font-size: 0.82rem;
+}
+.grp-row { display: flex; gap: 0.6rem; align-items: baseline; }
+.grp-row b { color: var(--accent); }
+.sub.src { margin-top: 0.5rem; font-size: 0.75rem; }

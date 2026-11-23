@@ -80,3 +80,22 @@ service**: no odds, no tips, no financial guidance.
 ```bash
 python3 src/build_db.py && python3 src/export_site.py
 ```
+
+## مصادر الجدولة وأساس العرض — Schedule sources and display basis
+
+تُجمع النتائج والأحداث من Football-Data.co.uk فقط، ولا نعيد نشر ملفاته الخام.
+حقائق الجدولة (الفريقان والتاريخ والوقت) من ملف fixtures لدى Football-Data،
+ومكمّلة من لوحة ESPN العامة عندما يسبق نشرها. حقائق الجدولة معلومات واقعية؛
+قضت محكمة العدل الأوروبية في C-604/10 (Football Dataco v Yahoo) بأن قوائم
+مباريات الدوري لا يحميها حق قواعد البيانات. نعرض هذه الحقائق مع الإسناد،
+ولا ننسخ عرض ESPN أو أي محتوى تحريري منه، ولا نقرأ ولا نخزن ولا نعرض أي
+حقول أسعار (odds/pickcenter) من ESPN أو غيره إطلاقًا.
+
+Results and events come only from Football-Data.co.uk, whose raw files we do
+not republish. Fixture facts (teams, date, time) come from Football-Data's
+fixtures file, supplemented by ESPN's public scoreboard when it publishes
+earlier. Fixture facts are factual information; the CJEU held in C-604/10
+(Football Dataco v Yahoo) that league fixture lists are not protected by
+database right. We show these facts with attribution, copy neither ESPN's
+presentation nor any editorial content, and never read, store, or display
+any odds fields from ESPN or any other source.

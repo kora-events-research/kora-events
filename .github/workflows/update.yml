@@ -34,6 +34,6 @@ jobs:
         run: |
           git config user.name "kora-events-bot"
           git config user.email "kora-events-bot@users.noreply.github.com"
-          git add data/snapshot.json
+          git add data/
           git diff --cached --quiet || git commit -m "chore: تحديث اللقطة $(date -u +'%Y-%m-%d %H:%M UTC')"
           git push

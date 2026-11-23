@@ -6,7 +6,16 @@ const I18N = {
     title: "كرة الأحداث",
     tagline: "تحليل مفتوح المصدر لأحداث مباريات كرة القدم",
     freshness: (m) => `آخر تحديث: ${m.generated_at_utc} · بيانات حتى ${m.to} · ${m.matches} مباراة هذا الموسم`,
-    freshsource: "المصدر: Football-Data.co.uk — يُحدَّث تلقائيًا 4 مرات أسبوعيًا",
+    freshsource: "المصادر: Football-Data (نتائج وأحداث) + ESPN (جدولة) — تحديث تلقائي 4 مرات أسبوعيًا",
+    srcLine: (s) => `مصدر الجدولة: ${s}`,
+    grpTitle: "جرّب مجموعة أحداث — من العينة التاريخية فقط",
+    grpHint: "اختر الأحداث لترى كم مرة تحققت معًا في مباريات هذا الموسم. هذا وصف تاريخي مشترك من العينة (109 مباريات)، وليس توقع النموذج لهذه المباراة بعينها، ولا يُضرب احتمال في آخر.",
+    grpPick: "اختر حدثًا واحدًا على الأقل",
+    grpAll: "تحققت المجموعة كاملة",
+    grpOneFails: "فشل حدث واحد منها على الأقل",
+    grpCI: "المدى التقريبي بثقة 95%",
+    grpOf: (c, o) => `${c} من ${o} مباراة`,
+    grpInsufficient: "لا دليل كافيًا في العينة على هذه المجموعة",
     disclaimer: `منصة بحثية تعليمية: احتمالات إحصائية لأحداث المباريات مع قياس علني للدقة. لا أسعار مراهنات ولا توصيات من أي نوع. كل نسبة احتمال قابل للخطأ.`,
     hFixtures: "المباريات القادمة",
     hResults: "التوقع مقابل النتيجة",
@@ -50,13 +59,22 @@ const I18N = {
     notesEn: null,
     toggle: "English",
     dir: "rtl",
-    scale: [[0.75, "شبه مؤكد"], [0.60, "مرجّح بقوة"], [0.50, "مرجّح"], [0.40, "متكافئ"], [0.25, "غير مرجّح"], [0.10, "ضعيف الاحتمال"], [0, "نادر"]],
+    scale: [[0.75, "احتمال مرتفع جدًا"], [0.60, "مرجّح بقوة"], [0.50, "مرجّح"], [0.40, "متكافئ"], [0.25, "غير مرجّح"], [0.10, "ضعيف الاحتمال"], [0, "نادر"]],
   },
   en: {
     title: "Kora Events",
     tagline: "Open-source football match-event analytics",
     freshness: (m) => `Last updated: ${m.generated_at_utc} · data through ${m.to} · ${m.matches} matches this season`,
-    freshsource: "Source: Football-Data.co.uk — auto-refreshed 4 times a week",
+    freshsource: "Sources: Football-Data (results, events) + ESPN (schedule) — auto-refreshed 4 times a week",
+    srcLine: (s) => `Schedule source: ${s}`,
+    grpTitle: "Try an event group — historical sample only",
+    grpHint: "Pick events to see how often they occurred together in this season's matches. This is a descriptive joint frequency from the sample (109 matches), not the model's forecast for this match, and no probabilities are multiplied.",
+    grpPick: "Select at least one event",
+    grpAll: "the whole group occurred",
+    grpOneFails: "at least one of them failed",
+    grpCI: "approximate 95% range",
+    grpOf: (c, o) => `${c} of ${o} matches`,
+    grpInsufficient: "insufficient evidence in the sample for this combination",
     disclaimer: `Research and education platform: statistical probabilities for match events with open accuracy tracking. No betting odds, no recommendations of any kind. Every figure is a fallible probability.`,
     hFixtures: "Upcoming fixtures",
     hResults: "Forecast vs. outcome",
@@ -100,7 +118,7 @@ const I18N = {
     notesEn: null,
     toggle: "العربية",
     dir: "ltr",
-    scale: [[0.75, "almost certain"], [0.60, "strongly favored"], [0.50, "favored"], [0.40, "toss-up"], [0.25, "unlikely"], [0.10, "improbable"], [0, "rare"]],
+    scale: [[0.75, "very high chance"], [0.60, "strongly favored"], [0.50, "favored"], [0.40, "toss-up"], [0.25, "unlikely"], [0.10, "improbable"], [0, "rare"]],
   },
 };
 
@@ -214,6 +232,15 @@ function fixtureCard(f, s, T) {
       <div class="sub">${T.referee(f)}</div>
       ${flags.length ? `<div class="flags">⚠ ${flags.join(" · ")} — ${T.flagCareful}</div>` : ""}
       ${probRows(f, s, T)}
+      <div class="sub src">${T.srcLine(f.src === "espn" ? "ESPN" : "Football-Data")}</div>
+      <div class="grp">
+        <div class="grp-title">${T.grpTitle}</div>
+        <div class="grp-hint">${T.grpHint}</div>
+        ${Object.keys(f.probs).map((e) =>
+          `<label class="grp-ev"><input type="checkbox" class="grp-check" value="${e}"> ${evLabel(e, s.events[e])}</label>`
+        ).join("")}
+        <div class="grp-out"><span class="sub">${T.grpPick}</span></div>
+      </div>
       ${tail}
     </div>
   </details>`;
@@ -287,5 +314,37 @@ function render(s) {
       })
       .join("")}</table></div>`;
 }
+
+function wilson(k, n) {
+  if (n === 0) return [0, 0];
+  const z = 1.96, p = k / n;
+  const den = 1 + z * z / n;
+  const ctr = (p + z * z / (2 * n)) / den;
+  const half = (z * Math.sqrt((p * (1 - p) + z * z / (4 * n)) / n)) / den;
+  return [Math.max(0, ctr - half), Math.min(1, ctr + half)];
+}
+
+document.addEventListener("change", (ev) => {
+  if (!ev.target.classList.contains("grp-check") || !SNAP) return;
+  const T = I18N[LANG];
+  const box = ev.target.closest(".grp");
+  const out = box.querySelector(".grp-out");
+  const sel = [...box.querySelectorAll(".grp-check:checked")].map((c) => c.value).sort();
+  if (sel.length === 0) {
+    out.innerHTML = `<span class="sub">${T.grpPick}</span>`;
+    return;
+  }
+  const j = SNAP.joints ? SNAP.joints[sel.join("|")] : null;
+  if (!j || j.of === 0) {
+    out.innerHTML = `<span class="sub">${T.grpInsufficient}</span>`;
+    return;
+  }
+  const pct = j.count / j.of;
+  const [lo, hi] = wilson(j.count, j.of);
+  out.innerHTML =
+    `<div class="grp-row"><span>${T.grpAll}</span><b>${PCT(pct)}</b><span class="sub">${T.grpOf(j.count, j.of)}</span></div>` +
+    `<div class="grp-row"><span>${T.grpOneFails}</span><b>${PCT(1 - pct)}</b></div>` +
+    `<div class="grp-row sub">${T.grpCI}: ${PCT(lo)} – ${PCT(hi)}</div>`;
+});
 
 boot();
