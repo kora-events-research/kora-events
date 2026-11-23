@@ -4,128 +4,153 @@
 const I18N = {
   ar: {
     title: "كرة الأحداث",
-    tagline: "منصة بحثية مفتوحة المصدر لتحليل أحداث مباريات كرة القدم وتوقعها",
-    freshness: (m) => `لقطة ثابتة — آخر تحديث: ${m.generated_at_utc} · بيانات حتى ${m.to} · ${m.matches} مباراة`,
-    disclaimer: `<strong>تنبيه:</strong> هذه المنصة بحثية تعليمية. تعرض احتمالات إحصائية لأحداث المباريات (أهداف، بطاقات، ركنيات) وتقيس دقتها علنًا. لا تعرض أسعار مراهنات، ولا توصيات مراهنة، ولا أي إرشاد مالي. لا توجد توقعات مؤكدة في الرياضة؛ كل نسبة معروضة هنا احتمال قابل للخطأ، وقسم «قياس الدقة» يوثّق أخطاء النموذج بوضوح.`,
+    tagline: "تحليل مفتوح المصدر لأحداث مباريات كرة القدم",
+    freshness: (m) => `آخر تحديث: ${m.generated_at_utc} · بيانات حتى ${m.to} · ${m.matches} مباراة هذا الموسم`,
+    freshsource: "المصدر: Football-Data.co.uk — يُحدَّث تلقائيًا 4 مرات أسبوعيًا",
+    disclaimer: `منصة بحثية تعليمية: احتمالات إحصائية لأحداث المباريات مع قياس علني للدقة. لا أسعار مراهنات ولا توصيات من أي نوع. كل نسبة احتمال قابل للخطأ.`,
     hFixtures: "المباريات القادمة",
-    demoHeading: "أمثلة توضيحية استرجاعية — لا تدخل تقييم الدقة إطلاقًا",
-    hintFixtures: "توقعات النموذج للمباريات المجدولة. أي توقع موثق قبل الانطلاق يُوسم بذلك صراحة مع وقت اللقطة، وأي تقدير وُلّد بعد موعد الانطلاق يُوسم «عرض توضيحي استرجاعي» ولا يدخل تقييم الدقة إطلاقًا.",
-    hEvents: "الأحداث المُعرَّفة",
-    hintEvents: "ستة أحداث قابلة للتحقق، مُعرَّفة تعريفًا تشغيليًا دقيقًا في الشيفرة المصدرية.",
-    hMetrics: "قياس الدقة",
-    hintMetrics: "تجربة زمنية: تدريب على أول ٧١ مباراة، تقييم على آخر ٣٨ مباراة لم تدخل التدريب. خط الأساس: توقع كل حدث بمتوسط تكراره حتى تلك اللحظة فقط، دون أي عوامل.",
-    hRepro: "إعادة الإنتاج",
-    hintRepro: `لا تنشر المنصة صفوفًا بمستوى المباراة الواحدة، لأن ذلك يعادل إعادة نشر بيانات المصدر الخام ولم نعثر على ترخيص صريح بإعادة نشرها. لتوليد تفاصيل كل مباراة محليًا: نزّل المستودع وشغّل <code>python3 src/build_db.py && python3 src/export_site.py</code> وستحصل على قاعدة البيانات كاملة على جهازك من المصدر الأصلي مباشرة.`,
-    hLimits: "المصدر والحدود",
-    verdict: "الخلاصة الحالية بصراحة: على عينة الاختبار (38 مباراة) كان النموذج أسوأ من خط الأساس البسيط في 4 من 5 أحداث، وأفضل بهامش ضئيل في حدث شبه ثابت (وجود بطاقة صفراء). هذا لا يثبت أن العوامل عديمة الفائدة مطلقًا؛ يثبت أن النموذج الحالي على هذه العينة لا يضيف شيئًا موثوقًا. المنصة تعرض ذلك علنًا بدل إخفائه.",
-    footer: `شيفرة مفتوحة المصدر بترخيص MIT — <a href="https://github.com/kora-events-research/kora-events">المستودع على GitHub</a>. مشروع بحثي مستقل لا يتبع أي جهة رياضية أو تجارية.`,
-    badgeTested: "مدروس توقعيًا",
-    badgeDesc: "وصفي فقط — لم يدخل التوقع بعد",
-    cardSub: (ev) => `حدث في ${ev.count} من ${ev.of} مباراة في العينة الحالية`,
-    tbl: ["الحدث", "عدد مباريات الاختبار", "تحقق فعليًا", "Brier خط الأساس", "Brier النموذج", "الفرق"],
-    better: "أفضل", worse: "أسوأ",
-    noFixtures: "لا توجد مباريات قادمة في ملف الجدولة لدى المصدر بعد تاريخ آخر تحديث. تظهر الجولة التالية هنا فور نشر المصدر لها وتشغيل التحديث.",
-    referee: (f) => `الحكم: ${f.referee || "لم يُعلن"} (${f.ref_prior_matches} مباريات سابقة في العينة)`,
+    hResults: "التوقع مقابل النتيجة",
+    hintResults: "كل توقع وثّقناه قبل انطلاق مباراته يظهر هنا بعد نهايتها مع ما حدث فعلًا. هذا هو قياس الدقة الحقيقي للمنصة على المدى الطويل.",
+    demoHeading: "أمثلة توضيحية استرجاعية (مباريات لُعبت بالفعل — لا تدخل تقييم الدقة إطلاقًا)",
+    techHeading: "التفاصيل التقنية (تعريف الأحداث، قياس الدقة التجريبي، إعادة الإنتاج، الحدود)",
+    tapToOpen: "اضغط لعرض التحليل",
+    referee: (f) => `الحكم: ${f.referee || "لم يُعلن"}`,
     flagLowTeam: "بيانات قليلة عن فريق",
     flagLowRef: "بيانات قليلة عن الحكم",
-    flagCareful: "تعامل مع التوقع بحذر إضافي",
-    retro: (f) => `⚠ عرض توضيحي استرجاعي: وُلّد هذا التقدير بعد موعد انطلاق المباراة المعلن (${f.kickoff_london || "غير معروف"})، فهو ليس توقعًا مسبقًا موثقًا ولن يدخل تقييم دقة المنصة. التوقعات الموثقة قبل الانطلاق تبدأ من الجولة القادمة.`,
-    saved: (f, m) => `توقع محفوظ قبل الانطلاق (${f.kickoff_london}) ضمن لقطة ${m.generated_at_utc}؛ سيُقيَّم بالنتيجة الفعلية في التحديث التالي.`,
-    current: (m) => `تقدير النموذج الحالي ضمن لقطة ${m.generated_at_utc}.`,
-    eqBase: "= خط الأساس",
-    ptsVsBase: "نقطة عن خط الأساس",
+    flagCareful: "تعامل مع التقدير بحذر إضافي",
+    retro: (f) => `عرض استرجاعي: وُلّد بعد انطلاق المباراة (${f.kickoff_london || "غير معروف"}) — ليس توقعًا مسبقًا ولا يدخل تقييم الدقة.`,
+    saved: (f, m) => `توقع محفوظ قبل الانطلاق (${f.kickoff_london}) ضمن لقطة ${m.generated_at_utc} — سيُقارن بالنتيجة الفعلية بعد المباراة.`,
+    current: (m) => `تقدير ضمن لقطة ${m.generated_at_utc}.`,
+    vsAvg: (d) => d === 0 ? "مطابق لمتوسط الدوري" : (d > 0 ? `أعلى من متوسط الدوري بـ${d} نقطة` : `أقل من متوسط الدوري بـ${-d} نقطة`),
+    noFixtures: "لا توجد مباريات قادمة في جدولة المصدر حاليًا. تظهر الجولة التالية هنا فور نشرها (عادة مساء الجمعة لمباريات نهاية الأسبوع) وتشغيل التحديث التلقائي.",
+    noResults: "لم تُقيَّم أي توقعات محفوظة بعد. أول مقارنة فعلية تظهر بعد انتهاء أول مباراة وثّقنا توقعها قبل انطلاقها.",
+    resForecast: "التوقع قبل المباراة",
+    resActual: "ما حدث فعلًا",
+    happened: "حدث", notHappened: "لم يحدث",
+    hEvents: "الأحداث المُعرَّفة",
+    hintEvents: "ستة أحداث قابلة للتحقق، مُعرَّفة تعريفًا تشغيليًا دقيقًا في الشيفرة المصدرية.",
+    hMetrics: "قياس الدقة التجريبي",
+    hintMetrics: "تجربة زمنية: تدريب على أول ٧١ مباراة، تقييم على آخر ٣٨ مباراة لم تدخل التدريب. خط الأساس: توقع كل حدث بمتوسط تكراره حتى تلك اللحظة فقط، دون أي عوامل.",
+    hRepro: "إعادة الإنتاج",
+    hintRepro: `لا تنشر المنصة صفوفًا بمستوى المباراة الواحدة، لأن ذلك يعادل إعادة نشر بيانات المصدر الخام ولم نعثر على ترخيص صريح بإعادة نشرها. لتوليد التفاصيل محليًا: نزّل المستودع وشغّل <code>python3 src/build_db.py && python3 src/export_site.py</code>.`,
+    hLimits: "المصدر والحدود",
+    verdict: "الخلاصة الحالية بصراحة: على عينة الاختبار (38 مباراة) كان النموذج أسوأ من خط الأساس البسيط في 4 من 5 أحداث، وأفضل بهامش ضئيل في حدث شبه ثابت. المنصة تعرض ذلك علنًا بدل إخفائه، وقسم «التوقع مقابل النتيجة» سيوثّق الدقة الفعلية للتوقعات المحفوظة مسبقًا مع تراكمها.",
+    footer: `شيفرة مفتوحة المصدر بترخيص MIT — <a href="https://github.com/kora-events-research/kora-events">المستودع على GitHub</a>. مشروع بحثي مستقل.`,
+    badgeTested: "مدروس توقعيًا",
+    badgeDesc: "وصفي فقط",
+    cardSub: (ev) => `حدث في ${ev.count} من ${ev.of} مباراة`,
+    tbl: ["الحدث", "مباريات الاختبار", "تحقق فعليًا", "Brier خط الأساس", "Brier النموذج", "الفرق"],
+    better: "أفضل", worse: "أسوأ",
     limits: [
-      `البيانات: ملف موسمي من <a href="https://football-data.co.uk/">Football-Data.co.uk</a> (تجميع رجعي للنتائج). لا نعيد نشر ملف البيانات الخام؛ الشيفرة تنزّله من مصدره مباشرة.`,
-      "المنصة لقطة ثابتة تُحدَّث دوريًا (وليست بثًا حيًا). تاريخ آخر تحديث معروض أعلى الصفحة دائمًا.",
-      "العينة صغيرة (109 مباريات، موسم واحد، دوري واحد)، والنتائج قابلة للتغير مع تراكم البيانات.",
-      "هذا بحث مفتوح للفهم والتجربة، وليس نظام تنبؤ مكتملًا أو مضمونًا.",
+      `البيانات: <a href="https://football-data.co.uk/">Football-Data.co.uk</a>. لا نعيد نشر ملف البيانات الخام؛ الشيفرة تنزّله من مصدره مباشرة.`,
+      "لقطة ثابتة تُحدَّث دوريًا، وليست بثًا حيًا.",
+      "العينة صغيرة (موسم واحد، دوري واحد)، والنتائج قابلة للتغير مع تراكم البيانات.",
+      "بحث مفتوح للفهم والتجربة، وليس نظام تنبؤ مضمونًا.",
     ],
-    notesEn: null, // ملاحظات المصدر تبقى عربية من اللقطة
+    notesEn: null,
     toggle: "English",
     dir: "rtl",
+    scale: [[0.75, "شبه مؤكد"], [0.60, "مرجّح بقوة"], [0.50, "مرجّح"], [0.40, "متكافئ"], [0.25, "غير مرجّح"], [0.10, "ضعيف الاحتمال"], [0, "نادر"]],
   },
   en: {
     title: "Kora Events",
-    tagline: "Open-source research platform for football match-event analytics",
-    freshness: (m) => `Fixed snapshot — last updated: ${m.generated_at_utc} · data through ${m.to} · ${m.matches} matches`,
-    disclaimer: `<strong>Notice:</strong> this is a research and education platform. It shows statistical probabilities for match events (goals, cards, corners) and measures its accuracy openly. No betting odds, no betting advice, no financial guidance of any kind. There are no certain predictions in sport; every figure here is a fallible probability, and the accuracy section documents the model's errors plainly.`,
+    tagline: "Open-source football match-event analytics",
+    freshness: (m) => `Last updated: ${m.generated_at_utc} · data through ${m.to} · ${m.matches} matches this season`,
+    freshsource: "Source: Football-Data.co.uk — auto-refreshed 4 times a week",
+    disclaimer: `Research and education platform: statistical probabilities for match events with open accuracy tracking. No betting odds, no recommendations of any kind. Every figure is a fallible probability.`,
     hFixtures: "Upcoming fixtures",
-    demoHeading: "Retrospective demo examples — never counted in accuracy evaluation",
-    hintFixtures: "Model estimates for scheduled matches. A genuine pre-kickoff forecast is labeled as such with its snapshot time; anything generated after the listed kickoff is labeled a retrospective demo and never enters accuracy evaluation.",
+    hResults: "Forecast vs. outcome",
+    hintResults: "Every forecast we recorded before kickoff appears here after the match with what actually happened. This is the platform's real long-run accuracy.",
+    demoHeading: "Retrospective demo examples (already-played matches — never counted in accuracy evaluation)",
+    techHeading: "Technical details (event definitions, experimental accuracy, reproduction, limits)",
+    tapToOpen: "Tap to view analysis",
+    referee: (f) => `Referee: ${f.referee || "not announced"}`,
+    flagLowTeam: "Limited team data",
+    flagLowRef: "Limited referee data",
+    flagCareful: "treat this estimate with extra caution",
+    retro: (f) => `Retrospective demo: generated after the listed kickoff (${f.kickoff_london || "unknown"}) — not a pre-kickoff forecast, never counted in accuracy.`,
+    saved: (f, m) => `Forecast saved before kickoff (${f.kickoff_london}) in the ${m.generated_at_utc} snapshot — it will be compared with the actual result after the match.`,
+    current: (m) => `Estimate from the ${m.generated_at_utc} snapshot.`,
+    vsAvg: (d) => d === 0 ? "level with the league average" : (d > 0 ? `${d} pts above the league average` : `${-d} pts below the league average`),
+    noFixtures: "No upcoming fixtures in the source schedule right now. The next round appears here once published (usually Friday evening for weekend matches) and the automatic refresh runs.",
+    noResults: "No saved forecasts evaluated yet. The first real comparison appears after the first match whose forecast we recorded before kickoff.",
+    resForecast: "Pre-match forecast",
+    resActual: "What happened",
+    happened: "Happened", notHappened: "Did not happen",
     hEvents: "Defined events",
     hintEvents: "Six checkable events, each with a precise operational definition in the source code.",
-    hMetrics: "Accuracy measurement",
-    hintMetrics: "Time-ordered experiment: trained on the first 71 matches, evaluated on the final 38 that never entered training. Baseline: predict each event by its running average up to that moment, with no factors at all.",
+    hMetrics: "Experimental accuracy",
+    hintMetrics: "Time-ordered experiment: trained on the first 71 matches, evaluated on the final 38 that never entered training. Baseline: each event predicted by its running average up to that moment, with no factors.",
     hRepro: "Reproduce locally",
-    hintRepro: `The platform does not publish match-level rows, because that would effectively republish the source's raw data and we found no explicit redistribution license. To generate full per-match detail locally: download the repo and run <code>python3 src/build_db.py && python3 src/export_site.py</code>; the database is built on your machine directly from the original source.`,
+    hintRepro: `The platform does not publish match-level rows, as that would effectively republish the source's raw data and we found no explicit redistribution license. To build the detail locally: download the repo and run <code>python3 src/build_db.py && python3 src/export_site.py</code>.`,
     hLimits: "Sources and limits",
-    verdict: "Honest bottom line: on the test split (38 matches) the model was worse than the simple baseline in 4 of 5 events, and marginally better on the near-constant yellow-card event. This does not prove the factors are useless; it proves the current model on this sample adds nothing reliable. The platform shows that openly instead of hiding it.",
-    footer: `Open-source under the MIT license — <a href="https://github.com/kora-events-research/kora-events">GitHub repository</a>. An independent research project, not affiliated with any sporting or commercial body.`,
+    verdict: "Honest bottom line: on the test split (38 matches) the model was worse than the simple baseline in 4 of 5 events, and marginally better on one near-constant event. The platform shows that openly, and the forecast-vs-outcome section will track real pre-kickoff accuracy as it accumulates.",
+    footer: `Open-source under the MIT license — <a href="https://github.com/kora-events-research/kora-events">GitHub repository</a>. An independent research project.`,
     badgeTested: "Evaluated",
-    badgeDesc: "Descriptive only — not yet predicted",
-    cardSub: (ev) => `Occurred in ${ev.count} of ${ev.of} matches in the current sample`,
+    badgeDesc: "Descriptive only",
+    cardSub: (ev) => `Occurred in ${ev.count} of ${ev.of} matches`,
     tbl: ["Event", "Test matches", "Occurred", "Brier baseline", "Brier model", "Delta"],
     better: "better", worse: "worse",
-    noFixtures: "No upcoming fixtures in the source's schedule file beyond the last update date. The next round appears here once the source publishes it and the refresh runs.",
-    referee: (f) => `Referee: ${f.referee || "not announced"} (${f.ref_prior_matches} prior matches in sample)`,
-    flagLowTeam: "little team data",
-    flagLowRef: "little referee data",
-    flagCareful: "treat this estimate with extra care",
-    retro: (f) => `⚠ Retrospective demo: this estimate was generated after the listed kickoff (${f.kickoff_london || "unknown"}), so it is not a documented pre-match forecast and does not enter the platform's accuracy evaluation. Genuine pre-kickoff forecasts start with the next round.`,
-    saved: (f, m) => `Pre-kickoff forecast (${f.kickoff_london}) saved in snapshot ${m.generated_at_utc}; it will be evaluated against the actual result on the next refresh.`,
-    current: (m) => `Current model estimate within snapshot ${m.generated_at_utc}.`,
-    eqBase: "= baseline",
-    ptsVsBase: "pts vs baseline",
     limits: [
-      `Data: a season CSV from <a href="https://football-data.co.uk/">Football-Data.co.uk</a> (a retrospective results compilation). The raw file is not redistributed; the scripts download it from its source.`,
-      "The platform is a periodically refreshed fixed snapshot, not a live feed. The last-update stamp is always shown at the top.",
-      "Small sample (109 matches, one season, one league); results may shift as data accumulates.",
-      "This is open research for understanding and experimentation, not a complete or guaranteed prediction system.",
+      `Data: <a href="https://football-data.co.uk/">Football-Data.co.uk</a>. We do not republish the raw data file; the code downloads it from the source directly.`,
+      "A fixed snapshot refreshed periodically, not a live feed.",
+      "Small sample (one season, one league); results will shift as data accumulates.",
+      "Open research for understanding and experimentation, not a guaranteed prediction system.",
     ],
-    notesEn: [
-      "A fixed snapshot timestamped at generation, not a live feed.",
-      "Card counts are as recorded by Football-Data and differ from the official count in some matches.",
-      "Upcoming-fixture estimates come from a model retrained on all 109 matches; held-out accuracy is documented in the accuracy section.",
-    ],
-    toggle: "عربي",
+    notesEn: null,
+    toggle: "العربية",
     dir: "ltr",
+    scale: [[0.75, "almost certain"], [0.60, "strongly favored"], [0.50, "favored"], [0.40, "toss-up"], [0.25, "unlikely"], [0.10, "improbable"], [0, "rare"]],
   },
 };
 
 const EVENT_LABEL_EN = {
-  goal_any: "At least one goal in the match",
+  goal_any: "At least one goal",
   btts: "Both teams score",
-  over25: "Three or more goals in the match",
-  yellow_any: "At least one yellow card (per this source)",
-  red_any: "At least one red card (per this source)",
-  corners_high: "Many corners (10 or more)",
+  over25: "Over 2.5 goals",
+  yellow_any: "At least one yellow card",
+  red_any: "At least one red card",
+  corners_high: "10+ corners",
 };
 
 let LANG = localStorage.getItem("kora-lang") || "ar";
 let SNAP = null;
 
-// لا يُعرض 100% أو 0% أبدًا: كل تقدير نموذج منتهٍ وقابل للخطأ.
-const PCT = (p) => {
-  if (p == null) return "—";
-  const v = p * 100;
-  if (v >= 99.95) return ">99.9%";
-  if (v <= 0.05) return "<0.1%";
-  return v.toFixed(1) + "%";
-};
+const PCT = (p) => `${Math.round(p * 100)}%`;
+
+async function boot() {
+  applyLang();
+  try {
+    const r = await fetch("data/snapshot.json", { cache: "no-store" });
+    if (!r.ok) throw new Error("snapshot " + r.status);
+    SNAP = await r.json();
+    render(SNAP);
+  } catch (e) {
+    document.getElementById("fixtures").innerHTML =
+      `<p class="notice">${e.message}</p>`;
+  }
+}
+
+document.getElementById("lang-toggle").addEventListener("click", () => {
+  LANG = LANG === "ar" ? "en" : "ar";
+  localStorage.setItem("kora-lang", LANG);
+  applyLang();
+  if (SNAP) render(SNAP);
+});
 
 function applyLang() {
   const T = I18N[LANG];
   document.documentElement.lang = LANG;
   document.documentElement.dir = T.dir;
-  document.title = LANG === "ar"
-    ? "كرة الأحداث — منصة بحثية مفتوحة لتحليل مباريات كرة القدم"
-    : "Kora Events — open-source football match-event research";
   document.getElementById("lang-toggle").textContent = T.toggle;
   document.getElementById("t-title").textContent = T.title;
   document.getElementById("t-tagline").textContent = T.tagline;
   document.getElementById("t-disclaimer").innerHTML = T.disclaimer;
   document.getElementById("t-h-fixtures").textContent = T.hFixtures;
-  document.getElementById("t-hint-fixtures").textContent = T.hintFixtures;
+  document.getElementById("t-h-results").textContent = T.hResults;
+  document.getElementById("t-hint-results").textContent = T.hintResults;
+  document.getElementById("t-demo-heading").textContent = T.demoHeading;
+  document.getElementById("t-tech-heading").textContent = T.techHeading;
   document.getElementById("t-h-events").textContent = T.hEvents;
   document.getElementById("t-hint-events").textContent = T.hintEvents;
   document.getElementById("t-h-metrics").textContent = T.hMetrics;
@@ -135,12 +160,61 @@ function applyLang() {
   document.getElementById("t-h-limits").textContent = T.hLimits;
   document.getElementById("verdict").textContent = T.verdict;
   document.getElementById("t-footer").innerHTML = T.footer;
+  document.getElementById("freshsource").textContent = T.freshsource;
   if (SNAP) render(SNAP);
 }
 
 function evLabel(id, ev) {
   return LANG === "en" && EVENT_LABEL_EN[id] ? EVENT_LABEL_EN[id] : ev.label;
 }
+
+function scaleWord(p, T) {
+  for (const [th, w] of T.scale) if (p >= th) return w;
+  return T.scale[T.scale.length - 1][1];
+}
+
+function probRows(f, s, T) {
+  return Object.entries(f.probs)
+    .map(([e, p]) => {
+      const diff = Math.round((p.model - p.baseline) * 100);
+      return `<div class="probrow">
+        <div class="probrow-top">
+          <span class="lbl">${evLabel(e, s.events[e])}</span>
+          <span class="scale">${scaleWord(p.model, T)}</span>
+          <span class="num">${PCT(p.model)}</span>
+        </div>
+        <div class="bar"><span style="width:${Math.round(p.model * 100)}%"></span></div>
+        <div class="sub">${T.vsAvg(diff)}</div>
+      </div>`;
+    })
+    .join("");
+}
+
+function fixtureCard(f, s, T) {
+  const flags = [];
+  if (f.low_team_data) flags.push(T.flagLowTeam);
+  if (f.low_ref_data) flags.push(T.flagLowRef);
+  const tail = f.kickoff_passed === true
+    ? `<div class="flags">${T.retro(f)}</div>`
+    : f.kickoff_passed === false
+      ? `<div class="sub preko">${T.saved(f, m_of(s))}</div>`
+      : `<div class="sub">${T.current(m_of(s))}</div>`;
+  return `<details class="fixture-card">
+    <summary>
+      <span class="teams">${f.home} — ${f.away}</span>
+      <span class="when">${f.date} · ${f.time}</span>
+      <span class="tap">${T.tapToOpen}</span>
+    </summary>
+    <div class="fixture-body">
+      <div class="sub">${T.referee(f)}</div>
+      ${flags.length ? `<div class="flags">⚠ ${flags.join(" · ")} — ${T.flagCareful}</div>` : ""}
+      ${probRows(f, s, T)}
+      ${tail}
+    </div>
+  </details>`;
+}
+
+const m_of = (s) => s.meta;
 
 function render(s) {
   const m = s.meta;
@@ -151,46 +225,37 @@ function render(s) {
   document.getElementById("limits-list").innerHTML =
     [...notes, ...T.limits].map((n) => `<li>${n}</li>`).join("");
 
-  const fx = document.getElementById("fixtures");
-  const fxd = document.getElementById("fixtures-demo");
-  fxd.innerHTML = "";
-  const fixtureCard = (f) => {
-    const flags = [];
-    if (f.low_team_data) flags.push(T.flagLowTeam);
-    if (f.low_ref_data) flags.push(T.flagLowRef);
-    const rows = Object.entries(f.probs)
-      .map(([e, p]) => {
-        const diff = Math.round((p.model - p.baseline) * 100);
-        const diffTxt = diff === 0 ? T.eqBase : (diff > 0 ? "+" : "") + diff + " " + T.ptsVsBase;
-        return `<div class="probrow">
-          <span class="lbl">${evLabel(e, s.events[e])}</span>
-          <span class="bar"><span style="width:${Math.round(p.model * 100)}%"></span></span>
-          <span class="num">${PCT(p.model)}</span>
-          <span class="sub">${diffTxt}</span>
-        </div>`;
-      })
-      .join("");
-    const tail = f.kickoff_passed === true
-      ? `<div class="flags">${T.retro(f)}</div>`
-      : f.kickoff_passed === false
-        ? `<div class="sub">${T.saved(f, m)}</div>`
-        : `<div class="sub">${T.current(m)}</div>`;
-    return `<div class="fixture-card">
-      <div class="teams">${f.home} — ${f.away}</div>
-      <div class="when">${f.date} · ${f.time} · ${T.referee(f)}</div>
-      ${flags.length ? `<div class="flags">⚠ ${flags.join(" · ")} — ${T.flagCareful}</div>` : ""}
-      ${rows}
-      ${tail}
-    </div>`;
-  };
+  // فصل صارم: مباريات قادمة حقيقية مقابل أمثلة استرجاعية توضيحية
   const upcoming = s.fixtures.filter((f) => f.kickoff_passed !== true);
   const retro = s.fixtures.filter((f) => f.kickoff_passed === true);
-  fx.innerHTML = upcoming.length
-    ? upcoming.map(fixtureCard).join("")
+  document.getElementById("fixtures").innerHTML = upcoming.length
+    ? upcoming.map((f) => fixtureCard(f, s, T)).join("")
     : `<div class="notice small">${T.noFixtures}</div>`;
-  if (retro.length) {
-    fxd.innerHTML = `<h3 class="demo-heading">${T.demoHeading}</h3>` +
-      retro.map(fixtureCard).join("");
+  document.getElementById("fixtures-demo").innerHTML =
+    retro.map((f) => fixtureCard(f, s, T)).join("");
+  document.querySelector(".demo-block").hidden = retro.length === 0;
+
+  // التوقع مقابل النتيجة: يظهر فقط عند وجود تقييمات فعلية
+  const resSec = document.getElementById("results-section");
+  const results = s.results || [];
+  resSec.hidden = results.length === 0;
+  if (results.length) {
+    document.getElementById("results").innerHTML = results.map((r) => {
+      const rows = Object.entries(r.events).map(([e, v]) =>
+        `<div class="probrow">
+          <div class="probrow-top">
+            <span class="lbl">${evLabel(e, s.events[e])}</span>
+            <span class="num">${PCT(v.forecast)}</span>
+            <span class="scale ${v.actual ? "hit" : "miss"}">${v.actual ? T.happened : T.notHappened}</span>
+          </div>
+        </div>`).join("");
+      return `<div class="fixture-card result-card">
+        <div class="teams">${r.home} — ${r.away}</div>
+        <div class="when">${r.date}</div>
+        <div class="sub">${T.resForecast} (${r.forecast_at}) · ${T.resActual}:</div>
+        ${rows}
+      </div>`;
+    }).join("");
   }
 
   document.getElementById("events").innerHTML = Object.entries(s.events)
@@ -218,18 +283,4 @@ function render(s) {
       .join("")}</table></div>`;
 }
 
-document.getElementById("lang-toggle").addEventListener("click", () => {
-  LANG = LANG === "ar" ? "en" : "ar";
-  localStorage.setItem("kora-lang", LANG);
-  applyLang();
-});
-
-applyLang();
-fetch("data/snapshot.json", { cache: "no-store" })
-  .then((r) => r.json())
-  .then((s) => { SNAP = s; render(s); })
-  .catch(() => {
-    document.getElementById("freshness").textContent =
-      LANG === "ar" ? "تعذر تحميل بيانات اللقطة (data/snapshot.json)"
-                    : "Could not load snapshot data (data/snapshot.json)";
-  });
+boot();

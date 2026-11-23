@@ -1,58 +1,69 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>كرة الأحداث — منصة بحثية مفتوحة لتحليل مباريات كرة القدم</title>
-<meta name="description" content="نموذج بحثي مفتوح المصدر يتنبأ بأحداث المباريات (أهداف، بطاقات، ركنيات) ويوثّق دقته بشفافية. ليس خدمة مراهنات. Open-source football match-event research, not a betting service.">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>كرة الأحداث — Kora Events</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
-<header>
-  <button id="lang-toggle" type="button" aria-label="Language">English</button>
-  <h1 id="t-title">كرة الأحداث</h1>
-  <p class="tagline" id="t-tagline"></p>
-  <div id="freshness" class="freshness"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <h1 id="t-title"></h1>
+    <p class="tagline" id="t-tagline"></p>
+  </div>
+  <button id="lang-toggle" class="lang-btn" type="button"></button>
 </header>
 
+<div class="freshbar">
+  <span id="freshness"></span>
+  <span class="freshbar-src" id="freshsource"></span>
+</div>
+
+<p class="notice small" id="t-disclaimer"></p>
+
 <main>
-<section class="notice" id="t-disclaimer"></section>
+  <section>
+    <h2 id="t-h-fixtures"></h2>
+    <div id="fixtures"></div>
+  </section>
 
-<section>
-  <h2 id="t-h-fixtures"></h2>
-  <p class="hint" id="t-hint-fixtures"></p>
-  <div id="fixtures"></div>
-  <div id="fixtures-demo"></div>
-</section>
+  <section id="results-section" hidden>
+    <h2 id="t-h-results"></h2>
+    <p class="hint" id="t-hint-results"></p>
+    <div id="results"></div>
+  </section>
 
-<section>
-  <h2 id="t-h-events"></h2>
-  <p class="hint" id="t-hint-events"></p>
-  <div id="events" class="cards"></div>
-</section>
+  <details class="demo-block">
+    <summary id="t-demo-heading"></summary>
+    <div id="fixtures-demo"></div>
+  </details>
 
-<section>
-  <h2 id="t-h-metrics"></h2>
-  <p class="hint" id="t-hint-metrics"></p>
-  <div id="metrics"></div>
-  <div id="verdict" class="notice small"></div>
-</section>
+  <details class="tech-block">
+    <summary id="t-tech-heading"></summary>
 
-<section>
-  <h2 id="t-h-repro"></h2>
-  <p class="hint" id="t-hint-repro"></p>
-</section>
+    <h3 id="t-h-events"></h3>
+    <p class="hint" id="t-hint-events"></p>
+    <div id="events" class="grid"></div>
 
-<section>
-  <h2 id="t-h-limits"></h2>
-  <ul class="limits" id="limits-list"></ul>
-</section>
+    <h3 id="t-h-metrics"></h3>
+    <p class="hint" id="t-hint-metrics"></p>
+    <div id="metrics"></div>
+    <p class="verdict" id="verdict"></p>
+
+    <h3 id="t-h-repro"></h3>
+    <p class="hint" id="t-hint-repro"></p>
+
+    <h3 id="t-h-limits"></h3>
+    <ul id="limits-list" class="limits"></ul>
+  </details>
 </main>
 
-<footer><p id="t-footer"></p></footer>
+<footer id="t-footer"></footer>
 
 <script src="assets/app.js"></script>
 </body>
