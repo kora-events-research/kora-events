@@ -316,3 +316,11 @@ code {
 .arch-home { font-weight: 600; }
 .arch-score { font-weight: 700; margin-inline-start: auto; }
 .arch-ht { color: var(--muted); font-weight: 400; font-size: 0.78rem; }
+
+@media (max-width: 560px) {
+  .arch-row { display: grid; grid-template-columns: 1fr auto; row-gap: 0.1rem; }
+  .arch-row .arch-date { grid-column: 1 / -1; order: -1; }
+  .arch-row .arch-home { grid-column: 1; }
+  .arch-row .arch-score { grid-column: 2; grid-row: 2 / 4; align-self: center; margin-inline-start: 0.6rem; }
+  .arch-row .arch-away { grid-column: 1; }
+}
