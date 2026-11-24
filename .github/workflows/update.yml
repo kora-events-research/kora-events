@@ -27,6 +27,8 @@ jobs:
           python-version: "3.12"
       - run: pip install pandas numpy
       - name: rebuild snapshot
+        env:
+          FOOTBALL_DATA_ORG_TOKEN: ${{ secrets.FOOTBALL_DATA_ORG_TOKEN }}
         run: |
           python3 src/build_db.py
           python3 src/export_site.py
