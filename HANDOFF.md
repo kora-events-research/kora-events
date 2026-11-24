@@ -185,6 +185,14 @@ Light theme, Cairo font, minimal UI. Premier League (E0) 2026/27 only.
   result ingestion lags, preserve the blocker — never backfill synthetic or
   retrospective results. Main holds the evaluation wake
   (wakeschedule-01M859FRGPKG8B3BTNSSKT42V1, Nov 28 11:00 Riyadh).
+- CONFLICT QUARANTINE (Main 2026-11-24): automatic result matching alone
+  does not prove prospective evaluation. Before scoring an entry, verify
+  (a) forecast_at precedes the ACTUAL kickoff (official source), (b) exact
+  season/date/home/away match between frozen entry and result row, and
+  (c) event definitions from the same permitted source as training. Any
+  conflict (kickoff moved, name mismatch, timing doubt, source gap)
+  quarantines the entry: report it as conflicted, exclude it from scoring,
+  and never count it as forecast success or error.
 - Never display 100%/0% (use >99%/<1%); no certainty wording; joint tester
   numbers are descriptive historical co-occurrence with Wilson CIs, never
   multiplied marginals, never model joint forecasts.
