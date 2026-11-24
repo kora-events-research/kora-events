@@ -75,9 +75,12 @@ export async function toggleFavorite(key) {
     if (error) { favKeys.add(key); emitFav(); return false; }
   } else {
     favKeys.add(key); emitFav();
-    const { error } = await sb.from("favorites").upsert(
-      { user_id: user.id, fixture_key: key }, { onConflict: "user_id,fixture_key" });
-    if (error) { favKeys.delete(key); emitFav(); return false; }
+    // Plain insert: upsert (ON CONFLICT DO UPDATE) would require an UPDATE
+    // table grant we deliberately do not give. A duplicate (23505) already
+    // means the favorite exists, so it counts as success.
+    const { error } = await sb.from("favorites")
+      .insert({ user_id: user.id, fixture_key: key });
+    if (error && error.code !== "23505") { favKeys.delete(key); emitFav(); return false; }
   }
   return true;
 }
