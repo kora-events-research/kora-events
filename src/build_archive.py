@@ -48,20 +48,20 @@ def parse(season, text):
             cur_date = f"{year:04d}-{mon:02d}-{int(d.group(3)):02d}"
             continue
         rec = None
-        p = PLAYED_A.match(line)
+        p = PLAYED_B.match(line)  # try "v"-format first: PA's optional groups can mis-match it
         if p:
-            ht = [int(p.group(5)), int(p.group(6))] if p.group(5) else None
+            ht = [int(p.group(6)), int(p.group(7))] if p.group(6) else None
             rec = {"date": cur_date, "time_uk": p.group(1),
-                   "home": p.group(2).strip(), "away": p.group(7).strip(),
-                   "ft": [int(p.group(3)), int(p.group(4))],
+                   "home": p.group(2).strip(), "away": p.group(3).strip(),
+                   "ft": [int(p.group(4)), int(p.group(5))],
                    "ht": ht}
         else:
-            p = PLAYED_B.match(line)
+            p = PLAYED_A.match(line)
             if p:
-                ht = [int(p.group(6)), int(p.group(7))] if p.group(6) else None
+                ht = [int(p.group(5)), int(p.group(6))] if p.group(5) else None
                 rec = {"date": cur_date, "time_uk": p.group(1),
-                       "home": p.group(2).strip(), "away": p.group(3).strip(),
-                       "ft": [int(p.group(4)), int(p.group(5))],
+                       "home": p.group(2).strip(), "away": p.group(7).strip(),
+                       "ft": [int(p.group(3)), int(p.group(4))],
                        "ht": ht}
         if rec and matchday and cur_date:
             if matchday not in days:
