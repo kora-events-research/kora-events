@@ -210,7 +210,8 @@ Light theme, Cairo font, minimal UI. Premier League (E0) 2026/27 only.
 
 - Staging repo kora-events-v2 (public) hosts the redesigned UI at
   https://kora-events-research.github.io/kora-events-v2/ . Canonical repo and
-  site are UNCHANGED; no cutover decided or taken. Main owns that decision.
+  site are UNCHANGED; no cutover decided or taken; any cutover is the
+  project owner's decision, not this document's.
 - Staging deploy model: GitHub Pages deploys ONLY via .github/workflows/update.yml
   (actions/deploy-pages). Branch pushes do NOT deploy. Any static-file change
   needs a workflow_dispatch (Actions → refresh-snapshot → Run workflow) or
@@ -235,4 +236,4 @@ Light theme, Cairo font, minimal UI. Premier League (E0) 2026/27 only.
 - Known cosmetic items: nav scroll-spy defaults to Fixtures on load;
   long English strings in RTL table cells use dir=auto.
 - GitHub web sign-in may trigger email device verification; code arrives at
-  the account's Agent Mail address (read it there, it expires in 1h).
+  the account's registered email address (read it there; the code expires in 1h).
