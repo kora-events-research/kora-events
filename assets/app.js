@@ -27,6 +27,8 @@ const I18N = {
     tapToOpen: "اضغط لعرض التحليل",
     ukTime: "بتوقيت بريطانيا (GMT)",
     provTime: "موعد مبدئي — التاريخ والتوقيت غير مؤكدين (openfootball)",
+    schedHeading: "الجدولة الكاملة — ما تبقى من الموسم",
+    hintSched: "كل المواجهات المتبقية من المصدر التطوعي openfootball (CC0). جميع التواريخ والأوقات مبدئية وقد تتغير بقرارات البث — للتصفح فقط، بلا تحليل ولا احتمالات.",
     archHeading: "الأرشيف — نتائج المواسم السابقة والحالية",
     hintArch: "تصفح نتائج حقيقية من مصدر المجال العام openfootball (CC0). للتصفح فقط — بلا تحليل ولا احتمالات. النتيجة تُقرأ: صاحب الأرض أولًا — الرقم الكبير نتيجة نهاية المباراة، وبين قوسين نتيجة الشوط الأول.",
     archPartial: (n) => `تغطية جزئية لهذا الموسم: ${n} مباراة مسجلة فقط — المصدر تطوعي وقد يتأخر عن الجدول الفعلي.`,
@@ -97,6 +99,8 @@ const I18N = {
     tapToOpen: "Tap to view analysis",
     ukTime: "UK time (GMT)",
     provTime: "Provisional — date and kickoff time unconfirmed (openfootball)",
+    schedHeading: "Full schedule — the rest of the season",
+    hintSched: "Every remaining fixture from the volunteer source openfootball (CC0). All dates and times are provisional and can move with broadcast decisions — browsing only, no analysis, no probabilities.",
     archHeading: "Archive — past and current season results",
     hintArch: "Browse real results from the public-domain source openfootball (CC0). Browsing only — no analysis, no probabilities. Scores read home team first — the large number is full time, brackets show half time.",
     archPartial: (n) => `Partial coverage for this season: only ${n} matches recorded — the source is volunteer-maintained and can lag the actual schedule.`,
@@ -208,7 +212,10 @@ function applyLang() {
   document.getElementById("t-demo-heading").textContent = T.demoHeading;
   document.getElementById("t-arch-heading").textContent = T.archHeading;
   document.getElementById("t-hint-arch").textContent = T.hintArch;
+  document.getElementById("t-sched-heading").textContent = T.schedHeading;
+  document.getElementById("t-hint-sched").textContent = T.hintSched;
   if (ARCH) { fillArchSelectors(); renderArchive(); }
+  if (SCHED) { fillSchedRounds(); renderSchedule(); }
   document.getElementById("t-tech-heading").textContent = T.techHeading;
   document.getElementById("t-h-events").textContent = T.hEvents;
   document.getElementById("t-hint-events").textContent = T.hintEvents;
@@ -460,6 +467,56 @@ document.getElementById("arch-season").addEventListener("change", (e) => {
 document.getElementById("arch-md").addEventListener("change", (e) => {
   archMd = e.target.value;
   renderArchive();
+});
+
+// --- Full-season upcoming schedule (openfootball CC0 rows only; browsing,
+// no analysis). All dates/times provisional by design. ---
+let SCHED = null;
+let schedRound = null;
+const schedBlock = document.querySelector(".sched-block");
+
+function renderSchedule() {
+  const T = I18N[LANG];
+  const r = SCHED.rounds.find((x) => x.round === schedRound) || SCHED.rounds[0];
+  document.getElementById("schedule").innerHTML = r.matches
+    .map(
+      (m) => `<div class="arch-row" aria-label="${m.home} vs ${m.away}, ${m.date}${m.time_uk ? ", " + m.time_uk : ""}"><span class="arch-date">${m.date}</span>` +
+        `<span class="arch-home">${m.home}</span>` +
+        `<span class="sched-time">${m.time_uk ? `<bdi dir="ltr">${m.time_uk}</bdi>` : "—"}</span>` +
+        `<span class="arch-away">${m.away}</span></div>`
+    )
+    .join("");
+}
+
+function fillSchedRounds() {
+  const T = I18N[LANG];
+  const sel = document.getElementById("sched-round");
+  sel.innerHTML = SCHED.rounds
+    .map((r) => `<option value="${r.round}">${T.archRound(archRoundNum(r.round))}</option>`)
+    .join("");
+  sel.value = schedRound && SCHED.rounds.some((x) => x.round === schedRound)
+    ? schedRound
+    : SCHED.rounds[0].round;
+  schedRound = sel.value;
+}
+
+schedBlock.addEventListener("toggle", async () => {
+  if (!schedBlock.open || SCHED) return;
+  try {
+    const r = await fetch("data/schedule.json", { cache: "no-store" });
+    if (!r.ok) throw new Error("schedule " + r.status);
+    SCHED = await r.json();
+    document.getElementById("sched-controls").hidden = false;
+    fillSchedRounds();
+    renderSchedule();
+  } catch (e) {
+    document.getElementById("schedule").innerHTML =
+      `<p class="notice">${e.message}</p>`;
+  }
+});
+document.getElementById("sched-round").addEventListener("change", (e) => {
+  schedRound = e.target.value;
+  renderSchedule();
 });
 
 boot();
