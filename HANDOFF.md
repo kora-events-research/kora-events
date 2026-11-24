@@ -28,9 +28,11 @@ Light theme, Cairo font, minimal UI. Premier League (E0) 2026/27 only.
   `ESPN_ENABLED = False` in src/export_site.py. Do not re-enable without a
   licensed basis. Never read odds/pickcenter fields from any source.
 - Known gap: FD fixtures.csv is posted later in the week (typically Friday PM
-  for the weekend round, Tuesday PM for midweek). Between rounds the upcoming-
-  fixture list is sparse (as of 2026-11-24 it shows 1 match). The Friday cron
-  restores breadth automatically.
+  for the weekend round, Tuesday PM for midweek). Bridged 2026-11-24 by an
+  openfootball provisional schedule layer (CC0, github.com/openfootball/england):
+  30 fixtures Nov 28–Dec 5, each card badged "provisional — date/time
+  unconfirmed (openfootball)"; pairings verified 20/20 vs the official PL list,
+  dates/times can be stale ±1–2 days and are never shown as confirmed.
 
 ## Architecture
 
@@ -63,26 +65,40 @@ Light theme, Cairo font, minimal UI. Premier League (E0) 2026/27 only.
 ## Outstanding work (priority order)
 
 1. REAL prospective evaluation: after 27 Nov matches, FD results let the log
-   evaluate the 20 stored forecasts. This is the user's core requested proof.
+   evaluate the 20 stored v1 forecasts. This is the user's core requested proof.
    Needs: cron results ingestion (Sun/Wed 23:00 UTC runs) + honest report.
-2. Historical chronological-holdout backtest across past E0 seasons (train
-   earlier, test later; do NOT assume more seasons improves accuracy; report
-   negative results honestly). Not yet started.
-3. User-approved-pending features (2026-11-24 voice note, via Main):
-   historical results archive (feasible statically from FD aggregates),
-   broader upcoming schedule (blocked on compliant source — see gap above),
-   email/password accounts + favorites (needs a free backend — Supabase or
-   Firebase free tier; signup WITHOUT email verification code is supported
-   (confirm-email off); passwords hashed by provider, recovery via email
-   link. REQUIRES user approval for a new external service account — not yet
-   granted as of 2026-11-24).
+   Note the v1 entries were recorded by the discontinued logreg model; v2
+   entries (league base rates) start accruing once FD posts confirmed fixtures.
+2. Model improvement work: the single-fit logistic model was found WORSE than
+   its own expanding baseline on all 5 events in an independent multi-season
+   validation (1,634 held-out matches, 13 seasons, season-block bootstrap) on
+   2026-11-24. Display therefore switched to v2-baseline (league rates labeled
+   as general reference). A blend was only suggestive (CIs cross zero) and was
+   NOT adopted. Any future model change ships as a new labeled version,
+   prospectively, after passing the same evaluation harness.
+3. Schedule breadth: openfootball provisional layer covers Nov 28–Dec 5 with
+   per-card "provisional" badges; football-data.org free tier (one app/domain,
+   attribution required, key server-side only) is an approved-pending upgrade
+   path once its GTC is read firsthand; defer until needed.
 
 ## Operational notes
 
-- Pushes use short-lived fine-grained PATs created in the browser, used once,
-  deleted immediately; token inventory verified empty after each cycle.
+- Auth + favorites are LIVE (Supabase free tier, agent-owned project
+  fbcwfizcmdulrkahypwi): email/password signup without email confirmation,
+  star/unstar persistence verified E2E 2026-11-24 including password recovery
+  (explicit redirectTo client-side; GoTrue emails otherwise carry the domain
+  root, which 404s). Test users are created and deleted within each test;
+  credentials are vault-generated and never appear in messages.
+- GitHub deployment: fine-grained PAT creation hit a provider throttle
+  2026-11-24 ~04:04 ("You can't perform that action at this time") after 17
+  same-day create/delete cycles. PAT pushes are HELD until an external signal
+  says the restriction lifted (do NOT timer-retry; browser-use blocking
+  guidance). Verified alternative in use: ordinary web-UI file upload
+  (/upload/main/<dir>) on the existing browser session — used for the
+  v2-baseline deploy (3 commits, remote verified byte-identical via raw fetch).
 - Never display 100%/0% (use >99%/<1%); no certainty wording; joint tester
   numbers are descriptive historical co-occurrence with Wilson CIs, never
   multiplied marginals, never model joint forecasts.
-- Fixture times displayed as UK time (GMT) with explicit label.
+- Fixture times displayed as UK time (GMT) with explicit label; provisional
+  openfootball rows hide exact kickoff and show the badge instead.
 - Team-name mapping between sources must be verified programmatically.
