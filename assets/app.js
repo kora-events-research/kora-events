@@ -25,10 +25,14 @@ const I18N = {
     demoHeading: "أمثلة توضيحية استرجاعية (مباريات لُعبت بالفعل — لا تدخل تقييم الدقة إطلاقًا)",
     techHeading: "التفاصيل التقنية (تعريف الأحداث، قياس الدقة التجريبي، إعادة الإنتاج، الحدود)",
     tapToOpen: "اضغط لعرض التحليل",
-    ukTime: "بتوقيت بريطانيا (GMT)",
+    ukTime: "بتوقيت المصدر (المنطقة غير محددة)",
     provTime: "موعد مبدئي — التاريخ والتوقيت غير مؤكدين (openfootball)",
-    schedHeading: "الجدولة الكاملة — ما تبقى من الموسم",
-    hintSched: "كل المواجهات المتبقية من المصدر التطوعي openfootball (CC0). جميع التواريخ والأوقات مبدئية وقد تتغير بقرارات البث — للتصفح فقط، بلا تحليل ولا احتمالات.",
+    schedHeading: "جدولة المصدر — موسم 2026-27",
+    hintSched: "المصدر التطوعي openfootball (CC0) يسجل النتائج حتى الجولة 5 فقط. ما بعدها مواعيده المخططة: كلها مبدئية وقد تتغير، والأوقات كما وردت في المصدر الذي لا يحدد منطقتها الزمنية، وغير مؤكدة. الجولات التي انقضى تاريخها بلا نتيجة مسجلة بانتظار تحديث المصدر — لا يمكن التحقق منها من هذا المصدر. للتصفح فقط، بلا تحليل ولا احتمالات.",
+    schedStale: (n) => `${n} جولات انقضى تاريخها بلا نتيجة مسجلة — بانتظار تحديث المصدر`,
+    schedStaleTag: " (انقضى تاريخها — بانتظار المصدر)",
+    schedStaleRow: "هذه الجولة انقضى تاريخها دون نتيجة مسجلة في المصدر — المواعيد أدناه هي مخطط المصدر القديم، بانتظار تحديثه.",
+    ukTimeTitle: "الوقت كما ورد في المصدر — المصدر لا يحدد منطقة زمنية؛ غير مؤكد",
     archHeading: "الأرشيف — نتائج المواسم السابقة والحالية",
     hintArch: "تصفح نتائج حقيقية من مصدر المجال العام openfootball (CC0). للتصفح فقط — بلا تحليل ولا احتمالات. النتيجة تُقرأ: صاحب الأرض أولًا — الرقم الكبير نتيجة نهاية المباراة، وبين قوسين نتيجة الشوط الأول.",
     archPartial: (n) => `تغطية جزئية لهذا الموسم: ${n} مباراة مسجلة فقط — المصدر تطوعي وقد يتأخر عن الجدول الفعلي.`,
@@ -97,10 +101,14 @@ const I18N = {
     demoHeading: "Retrospective demo examples (already-played matches — never counted in accuracy evaluation)",
     techHeading: "Technical details (event definitions, experimental accuracy, reproduction, limits)",
     tapToOpen: "Tap to view analysis",
-    ukTime: "UK time (GMT)",
+    ukTime: "source time (timezone unspecified)",
     provTime: "Provisional — date and kickoff time unconfirmed (openfootball)",
-    schedHeading: "Full schedule — the rest of the season",
-    hintSched: "Every remaining fixture from the volunteer source openfootball (CC0). All dates and times are provisional and can move with broadcast decisions — browsing only, no analysis, no probabilities.",
+    schedHeading: "Source schedule — 2026-27 season",
+    hintSched: "The volunteer source openfootball (CC0) records results only up to round 5. Later rounds are its planned dates: all provisional and subject to change, times as recorded by the source, which specifies no timezone; unconfirmed. Rounds whose dates passed with no recorded result are awaiting a source update — they cannot be verified from this source. Browsing only, no analysis, no probabilities.",
+    schedStale: (n) => `${n} rounds past their date with no recorded result — awaiting source update`,
+    schedStaleTag: " (date passed — awaiting source)",
+    schedStaleRow: "This round's date passed with no result recorded in the source — the dates below are the source's old plan, awaiting its update.",
+    ukTimeTitle: "time as recorded in the source, which specifies no timezone; unconfirmed",
     archHeading: "Archive — past and current season results",
     hintArch: "Browse real results from the public-domain source openfootball (CC0). Browsing only — no analysis, no probabilities. Scores read home team first — the large number is full time, brackets show half time.",
     archPartial: (n) => `Partial coverage for this season: only ${n} matches recorded — the source is volunteer-maintained and can lag the actual schedule.`,
@@ -477,26 +485,33 @@ const schedBlock = document.querySelector(".sched-block");
 
 function renderSchedule() {
   const T = I18N[LANG];
-  const r = SCHED.rounds.find((x) => x.round === schedRound) || SCHED.rounds[0];
-  document.getElementById("schedule").innerHTML = r.matches
-    .map(
-      (m) => `<div class="arch-row" aria-label="${m.home} vs ${m.away}, ${m.date}${m.time_uk ? ", " + m.time_uk : ""}"><span class="arch-date">${m.date}</span>` +
-        `<span class="arch-home">${m.home}</span>` +
-        `<span class="sched-time">${m.time_uk ? `<bdi dir="ltr">${m.time_uk}</bdi>` : "—"}</span>` +
-        `<span class="arch-away">${m.away}</span></div>`
-    )
-    .join("");
+  const r = SCHED.rounds.find((x) => x.round === schedRound) || SCHED.rounds.find((x) => !x.stale) || SCHED.rounds[0];
+
+  document.getElementById("schedule").innerHTML =
+    (r.stale ? `<p class="notice sched-stale-note">${T.schedStaleRow}</p>` : "") +
+    r.matches
+      .map(
+        (m) => `<div class="arch-row" aria-label="${m.home} vs ${m.away}, ${m.date}${m.time_uk ? ", " + m.time_uk + " " + T.ukTimeTitle : ""}"><span class="arch-date">${m.date}</span>` +
+          `<span class="arch-home">${m.home}</span>` +
+          `<span class="sched-time" title="${T.ukTimeTitle}">${m.time_uk ? `<bdi dir="ltr">${m.time_uk}</bdi>` : "—"}</span>` +
+          `<span class="arch-away">${m.away}</span></div>`
+      )
+      .join("");
 }
 
 function fillSchedRounds() {
   const T = I18N[LANG];
   const sel = document.getElementById("sched-round");
   sel.innerHTML = SCHED.rounds
-    .map((r) => `<option value="${r.round}">${T.archRound(archRoundNum(r.round))}</option>`)
+    .map((r) => `<option value="${r.round}">${T.archRound(archRoundNum(r.round))}${r.stale ? T.schedStaleTag : ""}</option>`)
     .join("");
+  const cov = document.getElementById("sched-coverage");
+  cov.textContent = SCHED.stale_rounds ? T.schedStale(SCHED.stale_rounds) : "";
+  cov.hidden = !SCHED.stale_rounds;
+  const firstFuture = SCHED.rounds.find((x) => !x.stale);
   sel.value = schedRound && SCHED.rounds.some((x) => x.round === schedRound)
     ? schedRound
-    : SCHED.rounds[0].round;
+    : (firstFuture || SCHED.rounds[0]).round;
   schedRound = sel.value;
 }
 
