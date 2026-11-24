@@ -398,7 +398,7 @@ function archRoundNum(label) {
 }
 
 function renderArchive() {
-  const T = STRINGS[LANG];
+  const T = I18N[LANG];
   const s = ARCH.seasons.find((x) => x.season === archSeason);
   if (!s) return;
   const md = s.matchdays.find((x) => x.matchday === archMd) || s.matchdays[0];
@@ -415,7 +415,7 @@ function renderArchive() {
 }
 
 function fillArchMd() {
-  const T = STRINGS[LANG];
+  const T = I18N[LANG];
   const s = ARCH.seasons.find((x) => x.season === archSeason);
   const sel = document.getElementById("arch-md");
   sel.innerHTML = s.matchdays
