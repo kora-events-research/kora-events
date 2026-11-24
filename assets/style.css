@@ -285,3 +285,17 @@ code {
 .grp-row { display: flex; gap: 0.6rem; align-items: baseline; }
 .grp-row b { color: var(--accent); }
 .sub.src { margin-top: 0.5rem; font-size: 0.75rem; }
+
+/* auth & favorites */
+.hdr-actions { display: flex; align-items: center; gap: 8px; }
+.auth-who { font-size: 12px; opacity: .75; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fav-star { background: none; border: none; font-size: 20px; cursor: pointer; color: #b8860b; padding: 0 4px; line-height: 1; }
+.auth-modal { position: fixed; inset: 0; background: rgba(0,0,0,.35); display: flex; align-items: center; justify-content: center; z-index: 50; }
+.auth-box { background: #fff; border-radius: 12px; padding: 20px; width: min(92vw, 360px); display: flex; flex-direction: column; gap: 10px; box-shadow: 0 8px 30px rgba(0,0,0,.18); }
+.auth-box h3 { margin: 0; font-size: 18px; }
+.auth-input { padding: 10px; border: 1px solid #d7dce2; border-radius: 8px; font-size: 14px; font-family: inherit; }
+.auth-submit { padding: 10px; border: none; border-radius: 8px; background: #1b5e20; color: #fff; font-size: 15px; cursor: pointer; font-family: inherit; }
+.auth-submit:disabled { opacity: .6; }
+.auth-switch { background: none; border: none; color: #1b5e20; cursor: pointer; font-size: 13px; text-align: start; padding: 0; font-family: inherit; }
+.auth-err { color: #b00020; font-size: 13px; min-height: 16px; margin: 0; }
+.auth-close { background: none; border: 1px solid #d7dce2; border-radius: 8px; padding: 6px; cursor: pointer; font-size: 13px; font-family: inherit; }

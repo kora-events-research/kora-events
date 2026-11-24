@@ -1,5 +1,6 @@
 // يقرأ data/snapshot.json ويعرض اللقطة كاملة. لا يوجد أي خادم خلفي.
 // Reads the static snapshot and renders it. No backend.
+import { initAuth, setAuthLang, toggleFavorite, isFav, onFavChange, getUser } from "./auth.js";
 
 const I18N = {
   ar: {
@@ -59,6 +60,8 @@ const I18N = {
       "حقائق الجدولة والنتائج (الفريقان والتاريخ والوقت والأحداث) تُعرض مع الإسناد لمصدرها الوحيد Football-Data. كنا نكمل الجدولة من واجهة ESPN العامة، لكننا أوقفنا ذلك في 2026-11-24 بعد مراجعة شروط استخدام ديزني (disneytermsofuse.com، وتشمل منتجات ESPN) التي تحظر صراحة الوصول أو النسخ أو الاستخراج بوسائل آلية (بما فيها بناء مجموعات بيانات). لا نقرأ ولا نخزن ولا نعرض أي أسعار من أي مصدر إطلاقًا.",
     ],
     notesEn: null,
+    favAdd: "أضف للمفضلة",
+    favDone: "في المفضلة",
     toggle: "English",
     dir: "rtl",
     scale: [[0.75, "احتمال مرتفع جدًا"], [0.60, "مرجّح بقوة"], [0.50, "مرجّح"], [0.40, "متكافئ"], [0.25, "غير مرجّح"], [0.10, "ضعيف الاحتمال"], [0, "نادر"]],
@@ -120,6 +123,8 @@ const I18N = {
       "Fixture and result facts (teams, date, time, events) are shown with attribution to their single source, Football-Data. We previously supplemented the schedule from ESPN's public scoreboard, but stopped on 2026-11-24 after reviewing Disney's Terms of Use (disneytermsofuse.com, covering ESPN products), which expressly prohibit accessing, copying or extracting content by automated means, including building datasets. We never read, store, or display any odds fields from any source.",
     ],
     notesEn: null,
+    favAdd: "Add to favorites",
+    favDone: "In favorites",
     toggle: "العربية",
     dir: "ltr",
     scale: [[0.75, "very high chance"], [0.60, "strongly favored"], [0.50, "favored"], [0.40, "toss-up"], [0.25, "unlikely"], [0.10, "improbable"], [0, "rare"]],
@@ -147,6 +152,15 @@ const PCT = (p) => {
 
 async function boot() {
   applyLang();
+  initAuth(LANG).then(() => { if (SNAP) render(SNAP); }).catch(() => {});
+  onFavChange(() => { if (SNAP) render(SNAP); });
+  document.addEventListener("click", (ev) => {
+    const star = ev.target.closest(".fav-star");
+    if (!star) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    toggleFavorite(star.dataset.key);
+  });
   try {
     const r = await fetch("data/snapshot.json", { cache: "no-store" });
     if (!r.ok) throw new Error("snapshot " + r.status);
@@ -170,6 +184,7 @@ function applyLang() {
   document.documentElement.lang = LANG;
   document.documentElement.dir = T.dir;
   document.getElementById("lang-toggle").textContent = T.toggle;
+  setAuthLang(LANG);
   document.getElementById("t-title").textContent = T.title;
   document.getElementById("t-tagline").textContent = T.tagline;
   document.getElementById("t-disclaimer").innerHTML = T.disclaimer;
@@ -231,6 +246,7 @@ function fixtureCard(f, s, T) {
       <span class="teams">${f.home} — ${f.away}</span>
       <span class="when">${f.date} · ${f.time} ${T.ukTime}</span>
       <span class="tap">${T.tapToOpen}</span>
+      <button type="button" class="fav-star" data-key="${f.date}|${f.home}|${f.away}" aria-label="${T.favAdd}">${isFav(`${f.date}|${f.home}|${f.away}`) ? "★" : "☆"}</button>
     </summary>
     <div class="fixture-body">
       <div class="sub">${T.referee(f)}</div>
