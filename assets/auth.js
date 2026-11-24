@@ -141,7 +141,7 @@ export function openAuthModal(errKey) {
   reset.onclick = async () => {
     err.textContent = "";
     const e = email.value.trim();
-    if (e) await sb.auth.resetPasswordForEmail(e);
+    if (e) await sb.auth.resetPasswordForEmail(e, { redirectTo: "https://kora-events-research.github.io/kora-events/" });
     err.textContent = t.resetSent;
   };
 
