@@ -27,6 +27,11 @@ const I18N = {
     tapToOpen: "اضغط لعرض التحليل",
     ukTime: "بتوقيت بريطانيا (GMT)",
     provTime: "موعد مبدئي — التاريخ والتوقيت غير مؤكدين (openfootball)",
+    archHeading: "الأرشيف — نتائج المواسم السابقة والحالية",
+    hintArch: "تصفح نتائج حقيقية من مصدر المجال العام openfootball (CC0). للتصفح فقط — بلا تحليل ولا احتمالات.",
+    archPartial: (n) => `تغطية جزئية لهذا الموسم: ${n} مباراة مسجلة فقط — المصدر تطوعي وقد يتأخر عن الجدول الفعلي.`,
+    archRound: (n) => `الجولة ${n}`,
+    archSeason: "الموسم",
     referee: (f) => `الحكم: ${f.referee || "لم يُعلن"}`,
     flagLowTeam: "بيانات قليلة عن فريق",
     flagLowRef: "بيانات قليلة عن الحكم",
@@ -92,6 +97,11 @@ const I18N = {
     tapToOpen: "Tap to view analysis",
     ukTime: "UK time (GMT)",
     provTime: "Provisional — date and kickoff time unconfirmed (openfootball)",
+    archHeading: "Archive — past and current season results",
+    hintArch: "Browse real results from the public-domain source openfootball (CC0). Browsing only — no analysis, no probabilities.",
+    archPartial: (n) => `Partial coverage for this season: only ${n} matches recorded — the source is volunteer-maintained and can lag the actual schedule.`,
+    archRound: (n) => `Round ${n}`,
+    archSeason: "Season",
     referee: (f) => `Referee: ${f.referee || "not announced"}`,
     flagLowTeam: "Limited team data",
     flagLowRef: "Limited referee data",
@@ -196,6 +206,9 @@ function applyLang() {
   document.getElementById("t-h-results").textContent = T.hResults;
   document.getElementById("t-hint-results").textContent = T.hintResults;
   document.getElementById("t-demo-heading").textContent = T.demoHeading;
+  document.getElementById("t-arch-heading").textContent = T.archHeading;
+  document.getElementById("t-hint-arch").textContent = T.hintArch;
+  if (ARCH) { fillArchSelectors(); renderArchive(); }
   document.getElementById("t-tech-heading").textContent = T.techHeading;
   document.getElementById("t-h-events").textContent = T.hEvents;
   document.getElementById("t-hint-events").textContent = T.hintEvents;
@@ -369,6 +382,84 @@ document.addEventListener("change", (ev) => {
     `<div class="grp-row"><span>${T.grpAll}</span><b>${PCT(pct)}</b><span class="sub">${T.grpOf(j.count, j.of)}</span></div>` +
     `<div class="grp-row"><span>${T.grpOneFails}</span><b>${PCT(1 - pct)}</b></div>` +
     `<div class="grp-row sub">${T.grpCI}: ${PCT(lo)} – ${PCT(hi)}</div>`;
+});
+
+
+// --- Historical results archive (openfootball CC0 rows only; FD stays
+// aggregates-only by publication policy) ---
+let ARCH = null;
+let archSeason = null;
+let archMd = null;
+const archBlock = document.querySelector(".arch-block");
+
+function archRoundNum(label) {
+  const m = String(label).match(/(\d+)\s*$/);
+  return m ? m[1] : label;
+}
+
+function renderArchive() {
+  const T = STRINGS[LANG];
+  const s = ARCH.seasons.find((x) => x.season === archSeason);
+  if (!s) return;
+  const md = s.matchdays.find((x) => x.matchday === archMd) || s.matchdays[0];
+  document.getElementById("arch-coverage").textContent =
+    s.season === "2026-27" ? T.archPartial(s.played) : "";
+  document.getElementById("archive").innerHTML = md.matches
+    .map(
+      (m) => `<div class="arch-row"><span class="arch-date">${m.date}</span>` +
+        `<span class="arch-home">${m.home}</span>` +
+        `<span class="arch-score">${m.ft[0]}–${m.ft[1]}${m.ht ? ` <span class="arch-ht">(${m.ht[0]}–${m.ht[1]})</span>` : ""}</span>` +
+        `<span class="arch-away">${m.away}</span></div>`
+    )
+    .join("");
+}
+
+function fillArchMd() {
+  const T = STRINGS[LANG];
+  const s = ARCH.seasons.find((x) => x.season === archSeason);
+  const sel = document.getElementById("arch-md");
+  sel.innerHTML = s.matchdays
+    .map((md) => `<option value="${md.matchday}">${T.archRound(archRoundNum(md.matchday))}</option>`)
+    .join("");
+  sel.value = archMd && s.matchdays.some((x) => x.matchday === archMd)
+    ? archMd
+    : s.matchdays[s.matchdays.length - 1].matchday;
+  archMd = sel.value;
+}
+
+function fillArchSelectors() {
+  const sel = document.getElementById("arch-season");
+  sel.innerHTML = ARCH.seasons
+    .map((s) => `<option value="${s.season}">${s.season}</option>`)
+    .join("");
+  sel.value = archSeason;
+  fillArchMd();
+}
+
+archBlock.addEventListener("toggle", async () => {
+  if (!archBlock.open || ARCH) return;
+  try {
+    const r = await fetch("data/archive.json", { cache: "no-store" });
+    if (!r.ok) throw new Error("archive " + r.status);
+    ARCH = await r.json();
+    archSeason = ARCH.seasons[ARCH.seasons.length - 1].season;
+    document.getElementById("arch-controls").hidden = false;
+    fillArchSelectors();
+    renderArchive();
+  } catch (e) {
+    document.getElementById("archive").innerHTML =
+      `<p class="notice">${e.message}</p>`;
+  }
+});
+document.getElementById("arch-season").addEventListener("change", (e) => {
+  archSeason = e.target.value;
+  archMd = null;
+  fillArchMd();
+  renderArchive();
+});
+document.getElementById("arch-md").addEventListener("change", (e) => {
+  archMd = e.target.value;
+  renderArchive();
 });
 
 boot();
