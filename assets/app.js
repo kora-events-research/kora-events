@@ -408,7 +408,7 @@ function renderArchive() {
     .map(
       (m) => `<div class="arch-row" aria-label="${m.home} vs ${m.away}, full time ${m.ft[0]}-${m.ft[1]}${m.ht ? `, half time ${m.ht[0]}-${m.ht[1]}` : ""}"><span class="arch-date">${m.date}</span>` +
         `<span class="arch-home">${m.home}</span>` +
-        `<span class="arch-score">${m.ft[0]}–${m.ft[1]}${m.ht ? ` <span class="arch-ht">(${m.ht[0]}–${m.ht[1]})</span>` : ""}</span>` +
+        `<span class="arch-score"><bdi dir="ltr">${m.ft[0]}–${m.ft[1]}</bdi>${m.ht ? ` <span class="arch-ht"><bdi dir="ltr">(${m.ht[0]}–${m.ht[1]})</bdi></span>` : ""}</span>` +
         `<span class="arch-away">${m.away}</span></div>`
     )
     .join("");
