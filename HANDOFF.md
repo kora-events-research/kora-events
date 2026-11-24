@@ -1,15 +1,14 @@
 # HANDOFF — kora-events platform (2026-11-24)
 
-Purpose: let any future agent/maintainer recover and continue this project without
-the original task agent. Read this first, then README.md.
+Purpose: let any future maintainer recover and continue this project without
+the original author. Read this first, then README.md.
 
 ## What this is
 
 Static site on GitHub Pages: https://kora-events-research.github.io/kora-events/
 Repo (public, MIT): https://github.com/kora-events-research/kora-events
-Owner identity: agent-operated GitHub account `kora-events-research`
-(login in the user's Vault as an agent entry; Agent Mail 67bq5i@mail.instinct.com).
-Local working copy used during development: /downloads/kora-platform (git main).
+Owner identity: GitHub account `kora-events-research` (credentials held by the
+project owner outside this repo).
 
 Scope: open, anonymous, bilingual (AR/EN) football match-event analytics for
 research/education. No odds, no betting signals, no staking, no monetary framing.
@@ -40,20 +39,20 @@ Light theme, Cairo font, minimal UI. Premier League (E0) 2026/27 only.
   data/schedule.json: all 330 unplayed fixtures (rounds 6-38, 10 per round,
   330 + 50 played = 380 asserted). UI: separate lazy-loaded <details>
   (sched-block) with round selector, date + time + pairing only, all dates/
-  times labeled provisional, NO analysis cards or probabilities (per Main
-  05:05: browsing scope without multiplying league-rate cards).
+  times labeled provisional, NO analysis cards or probabilities (browsing scope only,
+  without multiplying identical league-rate cards).
 - Workflow rebuilds archive + schedule on every cron run.
 
 ## football-data.org (signed up 2026-11-24 ~04:55)
 
-- Account: Kora Events Research, agent mail, FREE tier (12 competitions incl.
+- Account: Kora Events Research, FREE tier (12 competitions incl.
   Premier League — verified on /coverage, fixtures/results/tables, 10 calls/min,
   delayed scores). Email verified same day (account stays active).
-- API token: vault agent entry "football-data.org API token (agent)" only.
+- API token: held by the project owner outside this repo.
   NEVER in the repo (public, MIT — GTC §6.1 forbids keys in open-source repos),
   never in messages/logs/artifacts. Workflow reads it from the Actions secret
-  FOOTBALL_DATA_ORG_TOKEN (secret creation pending user's vault approval to
-  type it on github.com — approval link relayed by Main 2026-11-24).
+  FOOTBALL_DATA_ORG_TOKEN (secret creation pending the account holder's
+  authorization as of 2026-11-24).
 - GTC (read firsthand 2026-11-24, last updated 2018-06-01): §2.3 one
   application/domain; §6.1 credentials confidential, never in open-source
   repos; §7.1 exact attribution "Football data provided by the
@@ -78,8 +77,8 @@ Light theme, Cairo font, minimal UI. Premier League (E0) 2026/27 only.
 - Attribution footer carries the exact §7.1 string + "(integration pending —
   no data from them displayed yet)"; it must switch to plain attribution
   only after the first successful provider-data run actually displays data.
-- Approved scope note (Main 05:05): broadening schedule browsing to the full
-  permitted season is within the user's 01:55 scope, but the schedule list
+- Scope decision (2026-11-24): broadening schedule browsing to the full
+  permitted season is in scope, but the schedule list
   must be separated from event-rate analysis cards (no multiplying identical
   league-rate cards), keeping clear that numbers are league references.
 
@@ -126,12 +125,16 @@ Light theme, Cairo font, minimal UI. Premier League (E0) 2026/27 only.
   for matches 27 Nov–3 Dec; they remain immutable and evaluable when FD posts
   results. The 21st displayed fixture was 1 segregated retrospective entry
   used to demonstrate the evaluation path (not a live forecast).
-- Public timestamp evidence = git commit history of data/forecast_log.json.
+- Publication-time evidence: forecast_at is self-reported and alone does
+  not prove public pre-kickoff publication. Evidence must come from the git
+  commit history of data/forecast_log.json, checked against the actual
+  kickoff at evaluation time (owner-mutable; record the commit SHAs relied
+  on).
 
 ## Outstanding work (priority order)
 
 1. REAL prospective evaluation: after 27 Nov matches, FD results let the log
-   evaluate the 20 stored v1 forecasts. This is the user's core requested proof.
+   evaluate the 20 stored v1 forecasts. This is the project's core deliverable.
    Needs: cron results ingestion (Sun/Wed 23:00 UTC runs) + honest report.
    Note the v1 entries were recorded by the discontinued logreg model; v2
    entries (league base rates) start accruing once FD posts confirmed fixtures.
@@ -152,17 +155,16 @@ Light theme, Cairo font, minimal UI. Premier League (E0) 2026/27 only.
 
 ## Operational notes
 
-- Auth + favorites are LIVE (Supabase free tier, agent-owned project
+- Auth + favorites are LIVE (Supabase free tier, project
   fbcwfizcmdulrkahypwi): email/password signup without email confirmation,
   star/unstar persistence verified E2E 2026-11-24 including password recovery
   (explicit redirectTo client-side; GoTrue emails otherwise carry the domain
   root, which 404s). Test users are created and deleted within each test;
-  credentials are vault-generated and never appear in messages.
+  credentials are generated per test and never recorded.
 - GitHub deployment: fine-grained PAT creation hit a provider throttle
   2026-11-24 ~04:04 ("You can't perform that action at this time") after 17
-  same-day create/delete cycles. PAT pushes are HELD until an external signal
-  says the restriction lifted (do NOT timer-retry; browser-use blocking
-  guidance). Verified alternative in use: ordinary web-UI file upload
+  same-day create/delete cycles. PAT pushes are HELD until an external signal says the restriction
+  lifted; no timer-based retries. Verified alternative in use: ordinary web-UI file upload
   (/upload/main/<dir>) on the existing browser session — used for the
   v2-baseline deploy (3 commits, remote verified byte-identical via raw fetch).
 - 2026-11-24 PM: Pages migrated to GitHub Actions artifact deployment
@@ -172,20 +174,20 @@ Light theme, Cairo font, minimal UI. Premier League (E0) 2026/27 only.
   (branch keeps the full working site). Commit route: the multi-file upload
   widget mangles filenames and 400s — use the web EDIT flow
   (/edit/main/<path>) + dialog commit; verify via contents API raw fetch
-  (Accept: application/vnd.github.raw). The local clone
-  /downloads/kora-platform git history has diverged from origin — treat the
-  remote main as truth, re-clone before local rebuilds.
-- EVALUATION 2026-11-27/28 (successor task): first anchor fixture is
+  (Accept: application/vnd.github.raw). Any pre-migration local clone may have diverged from origin. Treat
+  remote main as truth and re-clone before local rebuilds.
+- EVALUATION 2026-11-27/28: first anchor fixture is
   Nottingham Forest vs Chelsea, Fri Nov 27 20:00 GMT per the PL amendments
   page (premierleague.com/en/news/4725574). The frozen v1 entry exists in
   data/forecast_log.json with kickoff 20:00 UTC and forecast_at Nov 23 22:31
   UTC. At evaluation: recheck actual kickoff + authoritative final result
   (fd.org API if enabled by then, else a permitted open source), score ONLY
   the frozen v1 entries and only events whose result source is permitted; if
-  result ingestion lags, preserve the blocker — never backfill synthetic or
-  retrospective results. Main holds the evaluation wake
-  (wakeschedule-01M859FRGPKG8B3BTNSSKT42V1, Nov 28 11:00 Riyadh).
-- CONFLICT QUARANTINE (Main 2026-11-24): automatic result matching alone
+  result ingestion lags, preserve the blocker, never backfill synthetic or
+  retrospective results. The kickoff, source and publication checks above
+  are REQUIRED RESEARCH at evaluation time before any public claim of
+  genuine prospective accuracy; none is automated or already satisfied. An evaluation checkpoint is planned for Nov 28.
+- EVALUATION INTEGRITY REQUIREMENT (2026-11-24): automatic result matching alone
   does not prove prospective evaluation. Before scoring an entry, verify
   (a) forecast_at precedes the ACTUAL kickoff (official source), (b) exact
   season/date/home/away match between frozen entry and result row, and
