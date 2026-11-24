@@ -65,15 +65,28 @@ def main():
             unplayed_n += 1
     if total != 380:
         raise RuntimeError(f"expected 380 fixtures parsed, got {total}")
+    today = datetime.datetime.now(datetime.timezone.utc).date().isoformat()
+    out_rounds = []
+    stale_n = 0
+    for r in order:
+        if not rounds[r]:
+            continue
+        # جولة كل مواعيدها في الماضي ولا نتائج مسجلة لها في المصدر:
+        # بانتظار تحديث المصدر — لا تُقدَّم كمباريات قادمة إطلاقًا.
+        stale = all(m["date"] < today for m in rounds[r])
+        if stale:
+            stale_n += 1
+        out_rounds.append({"round": r, "stale": stale, "matches": rounds[r]})
     out = {
         "generated_at": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
         "source": "openfootball/england (CC0, public domain)",
         "season": SEASON,
         "unplayed": unplayed_n,
-        "rounds": [{"round": r, "matches": rounds[r]} for r in order if rounds[r]],
+        "stale_rounds": stale_n,
+        "rounds": out_rounds,
     }
     OUT.write_text(json.dumps(out, ensure_ascii=False), encoding="utf-8")
-    print("wrote", OUT, OUT.stat().st_size, "bytes;", unplayed_n, "unplayed fixtures in", len(out["rounds"]), "rounds")
+    print("wrote", OUT, OUT.stat().st_size, "bytes;", unplayed_n, "unplayed fixtures in", len(out_rounds), "rounds;", stale_n, "stale")
 
 
 if __name__ == "__main__":
