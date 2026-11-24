@@ -327,3 +327,5 @@ code {
   .arch-row .sched-time { grid-column: 2; grid-row: 2 / 4; align-self: center; margin-inline-start: 0.6rem; }
   .arch-row .arch-away { grid-column: 1; }
 }
+
+.sched-stale-note { margin: 4px 0 8px; }
