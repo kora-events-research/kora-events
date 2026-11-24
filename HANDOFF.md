@@ -165,9 +165,33 @@ Light theme, Cairo font, minimal UI. Premier League (E0) 2026/27 only.
   guidance). Verified alternative in use: ordinary web-UI file upload
   (/upload/main/<dir>) on the existing browser session — used for the
   v2-baseline deploy (3 commits, remote verified byte-identical via raw fetch).
+- 2026-11-24 PM: Pages migrated to GitHub Actions artifact deployment
+  (workflow run 45314169243, update.yml assemble-site -> upload-pages-artifact
+  retention-days:1 -> deploy-pages). Live serving verified byte-identical to
+  repo via no-store probes. Rollback: Pages settings -> Deploy from a branch
+  (branch keeps the full working site). Commit route: the multi-file upload
+  widget mangles filenames and 400s — use the web EDIT flow
+  (/edit/main/<path>) + dialog commit; verify via contents API raw fetch
+  (Accept: application/vnd.github.raw). The local clone
+  /downloads/kora-platform git history has diverged from origin — treat the
+  remote main as truth, re-clone before local rebuilds.
+- EVALUATION 2026-11-27/28 (successor task): first anchor fixture is
+  Nottingham Forest vs Chelsea, Fri Nov 27 20:00 GMT per the PL amendments
+  page (premierleague.com/en/news/4725574). The frozen v1 entry exists in
+  data/forecast_log.json with kickoff 20:00 UTC and forecast_at Nov 23 22:31
+  UTC. At evaluation: recheck actual kickoff + authoritative final result
+  (fd.org API if enabled by then, else a permitted open source), score ONLY
+  the frozen v1 entries and only events whose result source is permitted; if
+  result ingestion lags, preserve the blocker — never backfill synthetic or
+  retrospective results. Main holds the evaluation wake
+  (wakeschedule-01M859FRGPKG8B3BTNSSKT42V1, Nov 28 11:00 Riyadh).
 - Never display 100%/0% (use >99%/<1%); no certainty wording; joint tester
   numbers are descriptive historical co-occurrence with Wilson CIs, never
   multiplied marginals, never model joint forecasts.
-- Fixture times displayed as UK time (GMT) with explicit label; provisional
-  openfootball rows hide exact kickoff and show the badge instead.
+- Fixture times are labeled source time, timezone unspecified (openfootball
+  states none; verified 2026-11-24, no UK claim). Provisional openfootball
+  rows are date-only in the pipeline: no assumed-timezone kickoff conversion,
+  kickoff_utc/london/passed all null; cards show the provisional badge.
+  Provider-confirmed UTC timestamps (fd.org) replace this per fixture once the
+  integration is enabled and verified.
 - Team-name mapping between sources must be verified programmatically.
