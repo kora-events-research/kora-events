@@ -34,6 +34,30 @@ Light theme, Cairo font, minimal UI. Premier League (E0) 2026/27 only.
   unconfirmed (openfootball)"; pairings verified 20/20 vs the official PL list,
   dates/times can be stale ±1–2 days and are never shown as confirmed.
 
+## football-data.org (signed up 2026-11-24 ~04:55)
+
+- Account: Kora Events Research, agent mail, FREE tier (12 competitions incl.
+  Premier League — verified on /coverage, fixtures/results/tables, 10 calls/min,
+  delayed scores). Email verified same day (account stays active).
+- API token: vault agent entry "football-data.org API token (agent)" only.
+  NEVER in the repo (public, MIT — GTC §6.1 forbids keys in open-source repos),
+  never in messages/logs/artifacts. Workflow reads it from the Actions secret
+  FOOTBALL_DATA_ORG_TOKEN (secret creation pending user's vault approval to
+  type it on github.com — approval link relayed by Main 2026-11-24).
+- GTC (read firsthand 2026-11-24, last updated 2018-06-01): §2.3 one
+  application/domain; §6.1 credentials confidential, never in open-source
+  repos; §7.1 exact attribution "Football data provided by the
+  Football-Data.org API" (now in the site footer, both languages); §9.1 no
+  display of their data after cancellation; §9.2 no crests/logos. NOTE: the
+  GTC has no explicit affirmative public-display grant; display during an
+  active subscription is inferred from the mandatory in-app attribution plus
+  the post-cancellation display ban. If the subscription ever ends, remove the
+  layer AND its displayed data immediately (§9.1).
+- Layer design (src/export_site.py, FDORG_ENABLED): upgrades openfootball
+  provisional pairings to confirmed date/time (utcDate) only; no per-match
+  rows published; fail-loud team mapping; any fetch error leaves provisional
+  badges untouched. PL confirmed in free tier on /coverage.
+
 ## Architecture
 
 - src/build_db.py → football_research.db (SQLite, not published raw)
