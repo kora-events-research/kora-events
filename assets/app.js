@@ -26,6 +26,7 @@ const I18N = {
     techHeading: "التفاصيل التقنية (تعريف الأحداث، قياس الدقة التجريبي، إعادة الإنتاج، الحدود)",
     tapToOpen: "اضغط لعرض التحليل",
     ukTime: "بتوقيت بريطانيا (GMT)",
+    provTime: "موعد مبدئي — التاريخ والتوقيت غير مؤكدين (openfootball)",
     referee: (f) => `الحكم: ${f.referee || "لم يُعلن"}`,
     flagLowTeam: "بيانات قليلة عن فريق",
     flagLowRef: "بيانات قليلة عن الحكم",
@@ -90,6 +91,7 @@ const I18N = {
     techHeading: "Technical details (event definitions, experimental accuracy, reproduction, limits)",
     tapToOpen: "Tap to view analysis",
     ukTime: "UK time (GMT)",
+    provTime: "Provisional — date and kickoff time unconfirmed (openfootball)",
     referee: (f) => `Referee: ${f.referee || "not announced"}`,
     flagLowTeam: "Limited team data",
     flagLowRef: "Limited referee data",
@@ -246,7 +248,7 @@ function fixtureCard(f, s, T) {
   return `<details class="fixture-card">
     <summary>
       <span class="teams">${f.home} — ${f.away}</span>
-      <span class="when">${f.date} · ${f.time} ${T.ukTime}</span>
+      <span class="when">${f.provisional ? `${f.date} · <span class="prov-badge">${T.provTime}</span>` : `${f.date} · ${f.time} ${T.ukTime}`}</span>
       <span class="tap">${T.tapToOpen}</span>
       <button type="button" class="fav-star" data-key="${f.date}|${f.home}|${f.away}" aria-label="${T.favAdd}">${isFav(`${f.date}|${f.home}|${f.away}`) ? "★" : "☆"}</button>
     </summary>
