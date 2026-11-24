@@ -18,6 +18,7 @@ Football-Data وحده؛ توقف مكمل ESPN في 2026-11-24 لأسباب ت�
 import csv
 import io
 import json
+import os
 import pathlib
 import re
 import sqlite3
@@ -53,6 +54,30 @@ ESPN_ENABLED = False
 OPENFOOTBALL_ENABLED = True
 OPENFOOTBALL_URL = "https://raw.githubusercontent.com/openfootball/england/master/2026-27/1-premierleague.txt"
 OPENFOOTBALL_MAX_DAYS = 14
+
+# طبقة تأكيد الجدولة من football-data.org (اشتراك FREE فعّال باسم المشروع):
+# تُستخدم فقط لترقية مباريات openfootball المبدئية إلى مواعيد مؤكدة (تاريخ/وقت
+# الفريق نفسه من واجهتهم الرسمية). لا تُنشر منها صفوف مباريات خام بأي صيغة،
+# ولا تُقرأ منها أي حقول odds إطلاقًا، والمفتاح يبقى في أسرار المنفّد فقط.
+# العرض تحت الاشتراك الفعّال مع الإسناد الإلزامي في التذييل (§7.1)؛ عند إلغاء
+# الاشتراك تُحذف هذه الطبقة وبياناتها من العرض فورًا (§9.1) وتبقى شارات
+# openfootball المبدئية. إن تعذر الاتصال تبقى الشارات المبدئية كما هي.
+FDORG_ENABLED = True
+FDORG_URL = "https://api.football-data.org/v4/competitions/PL/matches?status=SCHEDULED,TIMED"
+
+# ربط أسماء football-data.org المختصرة بأسماء Football-Data (تسمية فقط).
+FDORG_TEAM_MAP = {
+    "Arsenal": "Arsenal", "Aston Villa": "Aston Villa",
+    "Bournemouth": "Bournemouth", "Brentford": "Brentford",
+    "Brighton": "Brighton", "Chelsea": "Chelsea",
+    "Coventry City": "Coventry", "Crystal Palace": "Crystal Palace",
+    "Everton": "Everton", "Fulham": "Fulham",
+    "Hull City": "Hull", "Ipswich Town": "Ipswich",
+    "Leeds United": "Leeds", "Liverpool": "Liverpool",
+    "Man City": "Man City", "Man United": "Man United",
+    "Newcastle": "Newcastle", "Nottingham Forest": "Nott'm Forest",
+    "Sunderland": "Sunderland", "Tottenham": "Tottenham",
+}
 
 # ربط أسماء openfootball بأسماء Football-Data (تسمية فقط؛ الفرق نفسها).
 OPENFOOTBALL_TEAM_MAP = {
@@ -164,6 +189,34 @@ def fetch_openfootball_fixtures():
             rows.append({"date": cur_date, "time": last_time,
                          "home": home, "away": away, "referee": None,
                          "src": "openfootball", "provisional": True})
+    return rows
+
+
+def fetch_fdorg_fixtures():
+    """مواعيد مؤكدة من football-data.org: التوأمة + تاريخ/وقت UTC فقط.
+
+    المفتاح من متغير البيئة FOOTBALL_DATA_ORG_TOKEN ولا يُطبع أبدًا.
+    يرفع RuntimeError إن تعذر ربط أي اسم فريق — لا تخمين صامت إطلاقًا.
+    """
+    token = os.environ.get("FOOTBALL_DATA_ORG_TOKEN")
+    if not token:
+        return []
+    req = urllib.request.Request(FDORG_URL, headers={"X-Auth-Token": token})
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        payload = json.load(resp)
+    rows = []
+    for m in payload.get("matches", []):
+        home_raw = m["homeTeam"].get("shortName") or m["homeTeam"]["name"]
+        away_raw = m["awayTeam"].get("shortName") or m["awayTeam"]["name"]
+        home = FDORG_TEAM_MAP.get(home_raw)
+        away = FDORG_TEAM_MAP.get(away_raw)
+        if not home or not away:
+            raise RuntimeError(f"football-data.org team unmapped: {home_raw!r} / {away_raw!r}")
+        utc = datetime.fromisoformat(m["utcDate"].replace("Z", "+00:00"))
+        rows.append({"date": utc.date().isoformat(),
+                     "home": home, "away": away,
+                     "kickoff_utc": utc,
+                     "src": "football-data.org", "provisional": False})
     return rows
 
 
@@ -324,6 +377,22 @@ def main():
             print(f"openfootball: {added} مقابلة مبدئية ضمن نافذة {OPENFOOTBALL_MAX_DAYS} يومًا")
         except Exception as exc:
             print(f"تعذر جلب جدولة openfootball: {exc}")
+    if FDORG_ENABLED:
+        try:
+            fdorg_rows = fetch_fdorg_fixtures()
+            if fdorg_rows:
+                by_pair = {(r["home"], r["away"]): r for r in fdorg_rows}
+                upgraded = 0
+                for i, r in enumerate(raw_fixtures):
+                    if not r.get("provisional"):
+                        continue
+                    conf = by_pair.get((r["home"], r["away"]))
+                    if conf:
+                        raw_fixtures[i] = {**conf}
+                        upgraded += 1
+                print(f"football-data.org: {upgraded} مباراة رُقي موعدها إلى مؤكد")
+        except Exception as exc:
+            print(f"تعذر تأكيد المواعيد عبر football-data.org (تبقى الشارات المبدئية): {exc}")
     if ESPN_ENABLED:
         try:
             for r in fetch_espn_fixtures():
