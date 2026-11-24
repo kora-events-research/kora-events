@@ -28,7 +28,7 @@ const I18N = {
     ukTime: "بتوقيت بريطانيا (GMT)",
     provTime: "موعد مبدئي — التاريخ والتوقيت غير مؤكدين (openfootball)",
     archHeading: "الأرشيف — نتائج المواسم السابقة والحالية",
-    hintArch: "تصفح نتائج حقيقية من مصدر المجال العام openfootball (CC0). للتصفح فقط — بلا تحليل ولا احتمالات.",
+    hintArch: "تصفح نتائج حقيقية من مصدر المجال العام openfootball (CC0). للتصفح فقط — بلا تحليل ولا احتمالات. النتيجة تُقرأ: صاحب الأرض أولًا — الرقم الكبير نتيجة نهاية المباراة، وبين قوسين نتيجة الشوط الأول.",
     archPartial: (n) => `تغطية جزئية لهذا الموسم: ${n} مباراة مسجلة فقط — المصدر تطوعي وقد يتأخر عن الجدول الفعلي.`,
     archRound: (n) => `الجولة ${n}`,
     archSeason: "الموسم",
@@ -98,7 +98,7 @@ const I18N = {
     ukTime: "UK time (GMT)",
     provTime: "Provisional — date and kickoff time unconfirmed (openfootball)",
     archHeading: "Archive — past and current season results",
-    hintArch: "Browse real results from the public-domain source openfootball (CC0). Browsing only — no analysis, no probabilities.",
+    hintArch: "Browse real results from the public-domain source openfootball (CC0). Browsing only — no analysis, no probabilities. Scores read home team first — the large number is full time, brackets show half time.",
     archPartial: (n) => `Partial coverage for this season: only ${n} matches recorded — the source is volunteer-maintained and can lag the actual schedule.`,
     archRound: (n) => `Round ${n}`,
     archSeason: "Season",
@@ -406,7 +406,7 @@ function renderArchive() {
     s.season === "2026-27" ? T.archPartial(s.played) : "";
   document.getElementById("archive").innerHTML = md.matches
     .map(
-      (m) => `<div class="arch-row"><span class="arch-date">${m.date}</span>` +
+      (m) => `<div class="arch-row" aria-label="${m.home} vs ${m.away}, full time ${m.ft[0]}-${m.ft[1]}${m.ht ? `, half time ${m.ht[0]}-${m.ht[1]}` : ""}"><span class="arch-date">${m.date}</span>` +
         `<span class="arch-home">${m.home}</span>` +
         `<span class="arch-score">${m.ft[0]}–${m.ft[1]}${m.ht ? ` <span class="arch-ht">(${m.ht[0]}–${m.ht[1]})</span>` : ""}</span>` +
         `<span class="arch-away">${m.away}</span></div>`
