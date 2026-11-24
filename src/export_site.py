@@ -416,17 +416,19 @@ def main():
             continue
         home, away, ref = fr["home"], fr["away"], fr.get("referee")
         kickoff_utc = fr.get("kickoff_utc")
-        if kickoff_utc is None:
-            if (fr.get("time") or "").strip():
+        if fr.get("provisional"):
+            # مباريات openfootball: المصدر لا يحدد منطقة زمنية لأوقاته، فلا نحوّل
+            # الوقت النصي إلى لحظة افتراضية إطلاقًا — مدخلة بتاريخ فقط، وقت الانطلاق
+            # الدقيق مجهول؛ لا «انطلقت» ولا «لم تنطلق»، ولا تدخل أي تحقق زمني دقيق.
+            kickoff_utc = None
+            kickoff_passed = None
+        else:
+            if kickoff_utc is None and (fr.get("time") or "").strip():
                 hh, mm = fr["time"].strip().split(":")[:2]
                 y_, m_, d_ = fr["date"].split("-")
                 kickoff_utc = datetime(int(y_), int(m_), int(d_), int(hh), int(mm),
                                        tzinfo=ZoneInfo("Europe/London")).astimezone(timezone.utc)
-        kickoff_passed = (kickoff_utc <= now_utc) if kickoff_utc else None
-        if fr.get("provisional"):
-            # مباريات openfootball: التوقيت غير مؤكد، فلا «انطلقت» ولا «لم تنطلق» —
-            # تُعرض موسومة مبدئية ولا تُبنى عليها أي مقارنة قبل/بعد الانطلاق.
-            kickoff_passed = None
+            kickoff_passed = (kickoff_utc <= now_utc) if kickoff_utc else None
         # مباراة انطلقت بالفعل (بتوقيت UTC الفعلي لحظة التوليد) لا تُعرض كقادمة إطلاقًا.
         if kickoff_passed is True:
             continue
