@@ -205,3 +205,34 @@ Light theme, Cairo font, minimal UI. Premier League (E0) 2026/27 only.
   Provider-confirmed UTC timestamps (fd.org) replace this per fixture once the
   integration is enabled and verified.
 - Team-name mapping between sources must be verified programmatically.
+
+## Redesign v2 + staging repo (2026-11-24 ~16:00 UTC)
+
+- Staging repo kora-events-v2 (public) hosts the redesigned UI at
+  https://kora-events-research.github.io/kora-events-v2/ . Canonical repo and
+  site are UNCHANGED; no cutover decided or taken. Main owns that decision.
+- Staging deploy model: GitHub Pages deploys ONLY via .github/workflows/update.yml
+  (actions/deploy-pages). Branch pushes do NOT deploy. Any static-file change
+  needs a workflow_dispatch (Actions → refresh-snapshot → Run workflow) or
+  waits for the next cron (Fri/Tue 17:30 UTC, Sun/Wed 23:00 UTC).
+- index.html references assets with ?v=YYYYMMDDrN; bump N on every static
+  asset change or browsers keep cached JS/CSS.
+- Redesign v2 content: pre-match panel shows actual computed per-team
+  aggregates (played-in-sample, GF/GA/yellows/xG per match averaged over last
+  5, points per match season), labeled "average per match (last 5)" and
+  "computed from matches before the fixture only, as of snapshot <ts>".
+  Referee empty = "not recorded in the source" (never inferred). League
+  figures labeled "league reference rates — not a match-specific forecast",
+  each with denominator. Sources table/cards show per-source status, real
+  coverage, license note, last-fetch; FD fixtures coverage string is computed
+  per build (currently "0 upcoming E0 rows ... fixtures come from
+  openfootball (provisional)" — FD posts fixtures later in the week).
+- xG provenance: HxG/AxG columns read verbatim from the FD results CSV
+  (build_db.py), no imputation or proxy; documented in README.md.
+- Mobile: 390px verified AR+EN; sources render as stacked cards (table hidden
+  ≤640px), archive has a horizontal-scroll hint, sticky-header anchor offset
+  190px mobile / nav-h+44px desktop (measured header heights 187.5/83px).
+- Known cosmetic items: nav scroll-spy defaults to Fixtures on load;
+  long English strings in RTL table cells use dir=auto.
+- GitHub web sign-in may trigger email device verification; code arrives at
+  the account's Agent Mail address (read it there, it expires in 1h).
