@@ -19,9 +19,10 @@ import csv
 import io
 import json
 import pathlib
+import re
 import sqlite3
 import urllib.request
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from itertools import combinations
 from zoneinfo import ZoneInfo
 
@@ -41,6 +42,31 @@ ESPN_DAYS_AHEAD = 10
 # الاستخدامات المحظورة) تحظر الوصول أو النسخ أو الاستخراج بوسائل آلية بما فيها
 # بناء أي مجموعة بيانات. الجدولة الآن من ملف Football-Data وحده.
 ESPN_ENABLED = False
+
+# جدولة مبدئية مكملة من openfootball (المجال العام/CC0،
+# https://github.com/openfootball/england): تقابل الأندية العشرين مع Football-Data،
+# لكن تواريخ/أوقات الملف تعود لإصداره الأول وقد تتأخر عن تعديلات البث الرسمية
+# بيوم أو يومين (مثال موثق: تعديلات نوفمبر على موقع الدوري الرسمي). لذلك:
+# تُعرض مبارياته موسومة «جدول مبدئي — توقيت غير مؤكد» ولا تُستخدم أبدًا مرساة
+# لتوقعات مسجلة قبل الانطلاق (لا تدخل forecast_log ولا تُبطل مدخلاته)، وتُستبعد
+# أي مواجهة لُعبت فعلًا أو ظهرت في ملف Football-Data (الأولوية له دائمًا).
+OPENFOOTBALL_ENABLED = True
+OPENFOOTBALL_URL = "https://raw.githubusercontent.com/openfootball/england/master/2026-27/1-premierleague.txt"
+OPENFOOTBALL_MAX_DAYS = 14
+
+# ربط أسماء openfootball بأسماء Football-Data (تسمية فقط؛ الفرق نفسها).
+OPENFOOTBALL_TEAM_MAP = {
+    "Arsenal FC": "Arsenal", "Aston Villa FC": "Aston Villa",
+    "AFC Bournemouth": "Bournemouth", "Brentford FC": "Brentford",
+    "Brighton & Hove Albion FC": "Brighton", "Chelsea FC": "Chelsea",
+    "Coventry City FC": "Coventry", "Crystal Palace FC": "Crystal Palace",
+    "Everton FC": "Everton", "Fulham FC": "Fulham",
+    "Hull City AFC": "Hull", "Ipswich Town FC": "Ipswich",
+    "Leeds United FC": "Leeds", "Liverpool FC": "Liverpool",
+    "Manchester City FC": "Man City", "Manchester United FC": "Man United",
+    "Newcastle United FC": "Newcastle", "Nottingham Forest FC": "Nott'm Forest",
+    "Sunderland AFC": "Sunderland", "Tottenham Hotspur FC": "Tottenham",
+}
 FORECAST_LOG = ROOT / "data" / "forecast_log.json"
 
 EVENT_LABELS = {k: v["label"] for k, v in EVENTS.items()}
@@ -95,6 +121,49 @@ def fetch_fd_fixtures():
             "referee": (fr.get("Referee") or "").strip() or None,
             "src": "football-data",
         })
+    return rows
+
+
+OF_MONTHS = {m: i for i, m in enumerate(
+    ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], 1)}
+
+
+def fetch_openfootball_fixtures():
+    """مباريات بلا نتيجة من ملف openfootball، موسومة مبدئية بتوقيت غير مؤكد.
+
+    يرفع RuntimeError إن تعذر ربط أي اسم فريق — لا تخمين صامت للأسماء إطلاقًا.
+    """
+    with urllib.request.urlopen(OPENFOOTBALL_URL, timeout=30) as resp:
+        text = resp.read().decode("utf-8")
+    rows, cur_date, cur_year, last_month, last_time = [], None, 2026, 8, ""
+    date_re = re.compile(r"^\s+(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+(\w+)\s+(\d{1,2})(?:\s+(\d{4}))?\s*$")
+    match_re = re.compile(r"^\s*(?:(\d{1,2}:\d{2})\s+)?(.+?)\s+v\s+(.+?)(?:\s+\d+-\d+.*)?$")
+    for line in text.splitlines():
+        dm = date_re.match(line)
+        if dm:
+            mon = OF_MONTHS.get(dm.group(1))
+            if mon is None:
+                continue
+            if dm.group(3):
+                cur_year = int(dm.group(3))
+            elif mon < last_month:  # عبور حدود السنة (Dec -> Jan)
+                cur_year += 1
+            last_month = mon
+            cur_date = f"{cur_year:04d}-{mon:02d}-{int(dm.group(2)):02d}"
+            last_time = ""
+            continue
+        mm = match_re.match(line)
+        if mm and cur_date and "v" in line and not re.search(r"\d+-\d+", line):
+            home_raw, away_raw = mm.group(2).strip(), mm.group(3).strip()
+            home = OPENFOOTBALL_TEAM_MAP.get(home_raw)
+            away = OPENFOOTBALL_TEAM_MAP.get(away_raw)
+            if not home or not away:
+                raise RuntimeError(f"openfootball team unmapped: {home_raw!r} / {away_raw!r}")
+            if mm.group(1):
+                last_time = mm.group(1)
+            rows.append({"date": cur_date, "time": last_time,
+                         "home": home, "away": away, "referee": None,
+                         "src": "openfootball", "provisional": True})
     return rows
 
 
@@ -229,6 +298,32 @@ def main():
     except Exception as exc:
         print(f"تعذر جلب fixtures لدى Football-Data: {exc}")
     fd_keys = {(r["date"], r["home"], r["away"]) for r in raw_fixtures}
+    played_pairs = {(str(r["match_datetime"])[:10], r["home_team"], r["away_team"])
+                    for i, r in df.iterrows()}
+    played_pairings = {(p[1], p[2]) for p in played_pairs}
+    if OPENFOOTBALL_ENABLED:
+        try:
+            today_utc = datetime.now(timezone.utc)
+            today = today_utc.date()
+            horizon = (today_utc + timedelta(days=OPENFOOTBALL_MAX_DAYS)).date()
+            known_teams = {r["team"] for r in trs}
+            of_rows = fetch_openfootball_fixtures()
+            added = 0
+            for r in of_rows:
+                if r["home"] not in known_teams or r["away"] not in known_teams:
+                    raise RuntimeError(f"openfootball team not in season data: {r}")
+                d = date.fromisoformat(r["date"])
+                if d < today or d > horizon:
+                    continue
+                if (r["home"], r["away"]) in played_pairings:
+                    continue
+                if any(k[1:] == (r["home"], r["away"]) for k in fd_keys):
+                    continue
+                raw_fixtures.append(r)
+                added += 1
+            print(f"openfootball: {added} مقابلة مبدئية ضمن نافذة {OPENFOOTBALL_MAX_DAYS} يومًا")
+        except Exception as exc:
+            print(f"تعذر جلب جدولة openfootball: {exc}")
     if ESPN_ENABLED:
         try:
             for r in fetch_espn_fixtures():
@@ -253,6 +348,10 @@ def main():
                 kickoff_utc = datetime(int(y_), int(m_), int(d_), int(hh), int(mm),
                                        tzinfo=ZoneInfo("Europe/London")).astimezone(timezone.utc)
         kickoff_passed = (kickoff_utc <= now_utc) if kickoff_utc else None
+        if fr.get("provisional"):
+            # مباريات openfootball: التوقيت غير مؤكد، فلا «انطلقت» ولا «لم تنطلق» —
+            # تُعرض موسومة مبدئية ولا تُبنى عليها أي مقارنة قبل/بعد الانطلاق.
+            kickoff_passed = None
         # مباراة انطلقت بالفعل (بتوقيت UTC الفعلي لحظة التوليد) لا تُعرض كقادمة إطلاقًا.
         if kickoff_passed is True:
             continue
@@ -283,6 +382,7 @@ def main():
             "kickoff_utc": kickoff_utc.strftime("%Y-%m-%d %H:%M UTC") if kickoff_utc else None,
             "kickoff_passed": kickoff_passed,
             "src": fr["src"],
+            "provisional": bool(fr.get("provisional")),
             "probs": probs,
         })
 
@@ -297,6 +397,10 @@ def main():
         except Exception:
             log = {}
     for f in fixtures:
+        # مباريات الجدولة المبدئية (openfootball) لا تُسجَّل توقعًا قبل الانطلاق:
+        # توقيتها غير مؤكد فلا تصلح مرساة زمنية للتقييم المستقبلي.
+        if f.get("provisional"):
+            continue
         if f["kickoff_passed"] is False and f["kickoff_utc"]:
             key = f"{f['date']}|{f['home']}|{f['away']}"
             if key not in log:
@@ -319,6 +423,8 @@ def main():
         if not e.get("status") and (e["date"], e["home"], e["away"]) not in played_keys:
             pending_pairs.setdefault((e["home"], e["away"]), []).append(k)
     for f in fixtures:
+        if f.get("provisional"):
+            continue  # المبدئي لا يُبطل مدخلات مسجلة؛ الإبطال من مصدر مؤكد فقط
         new_key = f"{f['date']}|{f['home']}|{f['away']}"
         for old_key in pending_pairs.get((f["home"], f["away"]), []):
             if old_key != new_key and not log[old_key].get("status"):
@@ -365,6 +471,7 @@ def main():
                 "أرقام البطاقات خاصة بمصدر Football-Data وتختلف عن العد الرسمي في بعض المباريات.",
                 "توقعات المباريات القادمة من نموذج أُعيد تدريبه على كل مباريات الموسم؛ قياس الدقة المنفصل موثق في قسم التجربة.",
                 "حقائق الجدولة (الفريقان والتاريخ والوقت) من ملف Football-Data وحده؛ أوقفنا جلب ESPN في 2026-11-24 لأن شروط استخدام ديزني تحظر الاستخراج الآلي. لا تُقرأ ولا تُعرض أي أسعار من أي مصدر.",
+                "المباريات الموسومة «مبدئي» من جدولة openfootball (المجال العام/CC0: github.com/openfootball/england): مقابلات الفرق مؤكدة، لكن تواريخ وأوقات الانطلاق غير مؤكدة وقد تتغير بتعديلات البث؛ لا تُستخدم مرساة للتوقعات المسجلة، والأولوية دائمًا لملف Football-Data.",
             ],
         },
         "events": freq,

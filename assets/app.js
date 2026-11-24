@@ -9,6 +9,7 @@ const I18N = {
     freshness: (m) => `آخر تحديث: ${m.generated_at_utc} · بيانات حتى ${m.to} · ${m.matches} مباراة هذا الموسم`,
     freshsource: "المصدر: Football-Data (نتائج وأحداث وجدولة) — تحديث تلقائي 4 مرات أسبوعيًا",
     srcLine: (s) => `مصدر الجدولة: ${s}`,
+    srcProv: "openfootball — جدول مبدئي، توقيت الانطلاق غير مؤكد",
     grpTitle: "جرّب مجموعة أحداث — من العينة التاريخية فقط",
     grpHint: "اختر الأحداث لترى كم مرة تحققت معًا في مباريات هذا الموسم. هذا وصف تاريخي مشترك من العينة (109 مباريات)، وليس توقع النموذج لهذه المباراة بعينها، ولا يُضرب احتمال في آخر.",
     grpPick: "اختر حدثًا واحدًا على الأقل",
@@ -72,6 +73,7 @@ const I18N = {
     freshness: (m) => `Last updated: ${m.generated_at_utc} · data through ${m.to} · ${m.matches} matches this season`,
     freshsource: "Source: Football-Data (results, events, schedule) — auto-refreshed 4 times a week",
     srcLine: (s) => `Schedule source: ${s}`,
+    srcProv: "openfootball — provisional schedule, kickoff time unconfirmed",
     grpTitle: "Try an event group — historical sample only",
     grpHint: "Pick events to see how often they occurred together in this season's matches. This is a descriptive joint frequency from the sample (109 matches), not the model's forecast for this match, and no probabilities are multiplied.",
     grpPick: "Select at least one event",
@@ -252,7 +254,7 @@ function fixtureCard(f, s, T) {
       <div class="sub">${T.referee(f)}</div>
       ${flags.length ? `<div class="flags">⚠ ${flags.join(" · ")} — ${T.flagCareful}</div>` : ""}
       ${probRows(f, s, T)}
-      <div class="sub src">${T.srcLine(f.src === "espn" ? "ESPN" : "Football-Data")}</div>
+      <div class="sub src">${T.srcLine(f.src === "espn" ? "ESPN" : f.src === "openfootball" ? T.srcProv : "Football-Data")}</div>
       <div class="grp">
         <div class="grp-title">${T.grpTitle}</div>
         <div class="grp-hint">${T.grpHint}</div>
