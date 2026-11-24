@@ -7,7 +7,7 @@ const I18N = {
     title: "كرة الأحداث",
     tagline: "تحليل مفتوح المصدر لأحداث مباريات كرة القدم",
     freshness: (m) => `آخر تحديث: ${m.generated_at_utc} · بيانات حتى ${m.to} · ${m.matches} مباراة هذا الموسم`,
-    freshsource: "المصادر: Football-Data (نتائج وأحداث) + openfootball (جدولة مبدئية موسومة) — تحديث تلقائي 4 مرات أسبوعيًا",
+    freshsource: "المصادر: Football-Data (نتائج وأحداث) + openfootball (جدولة مبدئية موسومة) + Football-Data.org (تأكيد المواعيد) — تحديث تلقائي 4 مرات أسبوعيًا",
     srcLine: (s) => `مصدر الجدولة: ${s}`,
     srcProv: "openfootball — جدول مبدئي، توقيت الانطلاق غير مؤكد",
     grpTitle: "جرّب مجموعة أحداث — من العينة التاريخية فقط",
@@ -53,7 +53,7 @@ const I18N = {
     hintRepro: `لا تنشر المنصة صفوفًا بمستوى المباراة الواحدة، لأن ذلك يعادل إعادة نشر بيانات المصدر الخام ولم نعثر على ترخيص صريح بإعادة نشرها. لتوليد التفاصيل محليًا: نزّل المستودع وشغّل <code>python3 src/build_db.py && python3 src/export_site.py</code>.`,
     hLimits: "المصدر والحدود",
     verdict: "الخلاصة الحالية بصراحة: على عينة الاختبار (38 مباراة) كان النموذج أسوأ من خط الأساس البسيط في 4 من 5 أحداث، وأفضل بهامش ضئيل في حدث شبه ثابت. المنصة تعرض ذلك علنًا بدل إخفائه، وقسم «التوقع مقابل النتيجة» سيوثّق الدقة الفعلية للتوقعات المحفوظة مسبقًا مع تراكمها.",
-    footer: `شيفرة مفتوحة المصدر بترخيص MIT — <a href="https://github.com/kora-events-research/kora-events">المستودع على GitHub</a>. مشروع بحثي مستقل.`,
+    footer: `شيفرة مفتوحة المصدر بترخيص MIT — <a href="https://github.com/kora-events-research/kora-events">المستودع على GitHub</a>. مشروع بحثي مستقل.<br>Football data provided by the Football-Data.org API`,
     badgeTested: "مدروس توقعيًا",
     badgeDesc: "وصفي فقط",
     cardSub: (ev) => `حدث في ${ev.count} من ${ev.of} مباراة`,
@@ -77,7 +77,7 @@ const I18N = {
     title: "Kora Events",
     tagline: "Open-source football match-event analytics",
     freshness: (m) => `Last updated: ${m.generated_at_utc} · data through ${m.to} · ${m.matches} matches this season`,
-    freshsource: "Sources: Football-Data (results, events) + openfootball (labeled provisional schedule) — auto-refreshed 4 times a week",
+    freshsource: "Sources: Football-Data (results, events) + openfootball (labeled provisional schedule) + Football-Data.org (schedule confirmation) — auto-refreshed 4 times a week",
     srcLine: (s) => `Schedule source: ${s}`,
     srcProv: "openfootball — provisional schedule, kickoff time unconfirmed",
     grpTitle: "Try an event group — historical sample only",
@@ -123,7 +123,7 @@ const I18N = {
     hintRepro: `The platform does not publish match-level rows, as that would effectively republish the source's raw data and we found no explicit redistribution license. To build the detail locally: download the repo and run <code>python3 src/build_db.py && python3 src/export_site.py</code>.`,
     hLimits: "Sources and limits",
     verdict: "Honest bottom line: on the test split (38 matches) the model was worse than the simple baseline in 4 of 5 events, and marginally better on one near-constant event. The platform shows that openly, and the forecast-vs-outcome section will track real pre-kickoff accuracy as it accumulates.",
-    footer: `Open-source under the MIT license — <a href="https://github.com/kora-events-research/kora-events">GitHub repository</a>. An independent research project.`,
+    footer: `Open-source under the MIT license — <a href="https://github.com/kora-events-research/kora-events">GitHub repository</a>. An independent research project.<br>Football data provided by the Football-Data.org API`,
     badgeTested: "Evaluated",
     badgeDesc: "Descriptive only",
     cardSub: (ev) => `Occurred in ${ev.count} of ${ev.of} matches`,
@@ -269,7 +269,7 @@ function fixtureCard(f, s, T) {
       <div class="sub">${T.referee(f)}</div>
       ${flags.length ? `<div class="flags">⚠ ${flags.join(" · ")} — ${T.flagCareful}</div>` : ""}
       ${probRows(f, s, T)}
-      <div class="sub src">${T.srcLine(f.src === "espn" ? "ESPN" : f.src === "openfootball" ? T.srcProv : "Football-Data")}</div>
+      <div class="sub src">${T.srcLine(f.src === "espn" ? "ESPN" : f.src === "openfootball" ? T.srcProv : f.src === "football-data.org" ? "Football-Data.org" : "Football-Data")}</div>
       <div class="grp">
         <div class="grp-title">${T.grpTitle}</div>
         <div class="grp-hint">${T.grpHint}</div>
