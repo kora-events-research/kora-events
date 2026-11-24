@@ -53,10 +53,25 @@ Light theme, Cairo font, minimal UI. Premier League (E0) 2026/27 only.
   active subscription is inferred from the mandatory in-app attribution plus
   the post-cancellation display ban. If the subscription ever ends, remove the
   layer AND its displayed data immediately (§9.1).
-- Layer design (src/export_site.py, FDORG_ENABLED): upgrades openfootball
-  provisional pairings to confirmed date/time (utcDate) only; no per-match
-  rows published; fail-loud team mapping; any fetch error leaves provisional
-  badges untouched. PL confirmed in free tier on /coverage.
+- Layer design (src/export_site.py): upgrades openfootball provisional
+  pairings to confirmed date/time (utcDate) only; fail-loud team mapping;
+  any fetch error leaves provisional badges untouched.
+- PUBLICATION HELD 2026-11-24 (FDORG_ENABLED = False): confirmed dates are
+  provider-derived per-fixture data, and the exporter commits snapshot.json
+  to a PUBLIC repo — permanent, non-revocable git history. The GTC has no
+  affirmative scope for that. Do not re-enable until a revocable serving
+  path exists (e.g. Pages artifact deployment without committing provider
+  data to git) plus executable removal-on-cancel behavior. The fallback
+  workflow run (45309482315, no token) proved the inert path.
+- Retention/cache terms: the GTC contains none beyond §9.1 (removal after
+  cancellation) and §4.6 (account data deletion on cancellation).
+- Attribution footer carries the exact §7.1 string + "(integration pending —
+  no data from them displayed yet)"; it must switch to plain attribution
+  only after the first successful provider-data run actually displays data.
+- Approved scope note (Main 05:05): broadening schedule browsing to the full
+  permitted season is within the user's 01:55 scope, but the schedule list
+  must be separated from event-rate analysis cards (no multiplying identical
+  league-rate cards), keeping clear that numbers are league references.
 
 ## Architecture
 
