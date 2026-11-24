@@ -34,6 +34,16 @@ Light theme, Cairo font, minimal UI. Premier League (E0) 2026/27 only.
   unconfirmed (openfootball)"; pairings verified 20/20 vs the official PL list,
   dates/times can be stale ±1–2 days and are never shown as confirmed.
 
+## Full-season schedule list (added 2026-11-24 ~05:15)
+
+- src/build_schedule.py parses the openfootball 2026-27 file into
+  data/schedule.json: all 330 unplayed fixtures (rounds 6-38, 10 per round,
+  330 + 50 played = 380 asserted). UI: separate lazy-loaded <details>
+  (sched-block) with round selector, date + time + pairing only, all dates/
+  times labeled provisional, NO analysis cards or probabilities (per Main
+  05:05: browsing scope without multiplying league-rate cards).
+- Workflow rebuilds archive + schedule on every cron run.
+
 ## football-data.org (signed up 2026-11-24 ~04:55)
 
 - Account: Kora Events Research, agent mail, FREE tier (12 competitions incl.
