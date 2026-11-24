@@ -30,7 +30,7 @@ const I18N = {
     referee: (f) => `الحكم: ${f.referee || "لم يُعلن"}`,
     flagLowTeam: "بيانات قليلة عن فريق",
     flagLowRef: "بيانات قليلة عن الحكم",
-    flagCareful: "تعامل مع التقدير بحذر إضافي",
+    flagCareful: "الإحصاءات الوصفية له أقل ثباتًا — معدلات الدوري المعروضة لا تتأثر بذلك",
     retro: (f) => `عرض استرجاعي: وُلّد بعد انطلاق المباراة (${f.kickoff_london || "غير معروف"}) — ليس توقعًا مسبقًا ولا يدخل تقييم الدقة.`,
     saved: (f, m) => `توقع محفوظ قبل الانطلاق (${f.kickoff_london}) ضمن لقطة ${m.generated_at_utc} — سيُقارن بالنتيجة الفعلية بعد المباراة.`,
     current: (m) => `تقدير ضمن لقطة ${m.generated_at_utc}.`,
@@ -95,7 +95,7 @@ const I18N = {
     referee: (f) => `Referee: ${f.referee || "not announced"}`,
     flagLowTeam: "Limited team data",
     flagLowRef: "Limited referee data",
-    flagCareful: "treat this estimate with extra caution",
+    flagCareful: "its descriptive stats are less stable — the displayed league rates are unaffected",
     retro: (f) => `Retrospective demo: generated after the listed kickoff (${f.kickoff_london || "unknown"}) — not a pre-kickoff forecast, never counted in accuracy.`,
     saved: (f, m) => `Forecast saved before kickoff (${f.kickoff_london}) in the ${m.generated_at_utc} snapshot — it will be compared with the actual result after the match.`,
     current: (m) => `Estimate from the ${m.generated_at_utc} snapshot.`,
@@ -238,7 +238,8 @@ function probRows(f, s, T) {
 function fixtureCard(f, s, T) {
   const flags = [];
   if (f.low_team_data) flags.push(T.flagLowTeam);
-  if (f.low_ref_data) flags.push(T.flagLowRef);
+  // v2: referee-history warning removed — displayed rates are league-wide,
+  // not referee-conditioned (it belonged to the discontinued model).
   const tail = f.kickoff_passed === true
     ? `<div class="flags">${T.retro(f)}</div>`
     : f.kickoff_passed === false

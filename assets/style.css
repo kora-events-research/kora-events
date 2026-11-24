@@ -300,4 +300,9 @@ code {
 .auth-err { color: #b00020; font-size: 13px; min-height: 16px; margin: 0; }
 .auth-close { background: none; border: 1px solid #d7dce2; border-radius: 8px; padding: 6px; cursor: pointer; font-size: 13px; font-family: inherit; }
 .prov-badge { color: #8a6d00; background: #fff6da; border: 1px solid #e8d48a;
-  border-radius: 6px; padding: 0 6px; font-size: 0.78rem; }
+  border-radius: 6px; padding: 0 6px; font-size: 0.78rem;
+  display: inline-block; white-space: normal; max-width: 100%; line-height: 1.35; }
+
+@media (max-width: 560px) {
+  .fixture-card summary .when { flex-basis: 100%; }
+}
