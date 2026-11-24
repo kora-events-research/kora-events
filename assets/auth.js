@@ -27,6 +27,10 @@ const T = {
     welcome: (e) => `مسجّل باسم ${e}`,
     reset: "نسيت كلمة السر؟",
     resetSent: "إن كان البريد مسجلًا لدينا، أرسلنا رابط إعادة التعيين. ملاحظة: لأن التسجيل لا يتحقق من البريد، تأكد أنك تملك هذا البريد فعلًا.",
+    newPassTitle: "تعيين كلمة سر جديدة",
+    newPass: "كلمة السر الجديدة (٨ أحرف على الأقل)",
+    newPassSave: "حفظ كلمة السر الجديدة",
+    newPassDone: "تم تغيير كلمة السر وتم تسجيل دخولك.",
     close: "إغلاق",
   },
   en: {
@@ -45,6 +49,10 @@ const T = {
     welcome: (e) => `Signed in as ${e}`,
     reset: "Forgot password?",
     resetSent: "If that email is registered, a reset link is on its way. Note: signup does not verify email ownership, so make sure you actually own this address.",
+    newPassTitle: "Set a new password",
+    newPass: "New password (at least 8 characters)",
+    newPassSave: "Save new password",
+    newPassDone: "Password changed and you are signed in.",
     close: "Close",
   },
 };
@@ -167,9 +175,43 @@ export function renderAuthButton() {
 
 export function setAuthLang(l) { lang = l; renderAuthButton(); emitFav(); }
 
+function isRecoveryLanding() {
+  return /[&#]type=recovery/.test(window.location.hash || "");
+}
+
+function openRecoveryModal() {
+  document.getElementById("auth-modal")?.remove();
+  const t = T[lang];
+  const err = h("p", { class: "auth-err" });
+  const pass = h("input", { type: "password", class: "auth-input", placeholder: t.newPass, dir: "ltr" });
+  const submit = h("button", { class: "auth-submit", type: "button", text: t.newPassSave });
+  async function save() {
+    err.textContent = "";
+    if (pass.value.length < 8) { err.textContent = t.shortPass; return; }
+    submit.disabled = true;
+    const { error } = await sb.auth.updateUser({ password: pass.value });
+    submit.disabled = false;
+    if (error) { err.textContent = t.genericErr; return; }
+    err.textContent = t.newPassDone;
+    err.style.color = "#1b5e20";
+    history.replaceState(null, "", location.pathname + location.search);
+    setTimeout(() => document.getElementById("auth-modal")?.remove(), 1800);
+  }
+  submit.onclick = save;
+  pass.onkeydown = (ev) => { if (ev.key === "Enter") save(); };
+  const box = h("div", { class: "auth-box" }, [
+    h("h3", { text: t.newPassTitle }), pass, submit, err,
+  ]);
+  const modal = h("div", { class: "auth-modal", id: "auth-modal" }, [box]);
+  document.body.appendChild(modal);
+  pass.focus();
+}
+
 export async function initAuth(l) {
   lang = l;
+  const recovery = isRecoveryLanding();
   const { data } = await sb.auth.getSession();
+  if (recovery) openRecoveryModal();
   user = data.session?.user || null;
   renderAuthButton();
   await loadFavorites();
@@ -177,5 +219,6 @@ export async function initAuth(l) {
     user = session?.user || null;
     renderAuthButton();
     loadFavorites();
+    if (_ev === "PASSWORD_RECOVERY") openRecoveryModal();
   });
 }
