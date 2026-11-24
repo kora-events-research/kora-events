@@ -55,6 +55,12 @@ OPENFOOTBALL_ENABLED = True
 OPENFOOTBALL_URL = "https://raw.githubusercontent.com/openfootball/england/master/2026-27/1-premierleague.txt"
 OPENFOOTBALL_MAX_DAYS = 14
 
+# 2026-11-24: الطبقة مُعطّلة مؤقتًا عمدًا. اللقطة تُلزَم إلى مستودع علني، وأي
+# مواعيد مؤكدة مشتقة من football-data.org ستدخل تاريخ Git العام بشكل دائم لا
+# يمكن التراجع عنه؛ شروطهم لا تتضمن نطاقًا صريحًا لذلك. تبقى الطبقة معطلة حتى
+# يُعتمد مسار تقديم قابل للإبطال لا يُلزم بيانات المزود في تاريخ علني (مثل
+# نشر Pages عبر artifact دون commit)، مع سلوك حذف عند الإلغاء قابل للتنفيذ.
+#
 # طبقة تأكيد الجدولة من football-data.org (اشتراك FREE فعّال باسم المشروع):
 # تُستخدم فقط لترقية مباريات openfootball المبدئية إلى مواعيد مؤكدة (تاريخ/وقت
 # الفريق نفسه من واجهتهم الرسمية). لا تُنشر منها صفوف مباريات خام بأي صيغة،
@@ -62,7 +68,7 @@ OPENFOOTBALL_MAX_DAYS = 14
 # العرض تحت الاشتراك الفعّال مع الإسناد الإلزامي في التذييل (§7.1)؛ عند إلغاء
 # الاشتراك تُحذف هذه الطبقة وبياناتها من العرض فورًا (§9.1) وتبقى شارات
 # openfootball المبدئية. إن تعذر الاتصال تبقى الشارات المبدئية كما هي.
-FDORG_ENABLED = True
+FDORG_ENABLED = False  # انظر الملاحظة أعلاه: النشر معلّق حتى مسار تقديم قابل للإبطال
 FDORG_URL = "https://api.football-data.org/v4/competitions/PL/matches?status=SCHEDULED,TIMED"
 
 # ربط أسماء football-data.org المختصرة بأسماء Football-Data (تسمية فقط).
