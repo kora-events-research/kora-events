@@ -7,7 +7,7 @@ const I18N = {
     title: "كرة الأحداث",
     tagline: "تحليل مفتوح المصدر لأحداث مباريات كرة القدم",
     freshness: (m) => `آخر تحديث: ${m.generated_at_utc} · بيانات حتى ${m.to} · ${m.matches} مباراة هذا الموسم`,
-    freshsource: "المصدر: Football-Data (نتائج وأحداث وجدولة) — تحديث تلقائي 4 مرات أسبوعيًا",
+    freshsource: "المصادر: Football-Data (نتائج وأحداث) + openfootball (جدولة مبدئية موسومة) — تحديث تلقائي 4 مرات أسبوعيًا",
     srcLine: (s) => `مصدر الجدولة: ${s}`,
     srcProv: "openfootball — جدول مبدئي، توقيت الانطلاق غير مؤكد",
     grpTitle: "جرّب مجموعة أحداث — من العينة التاريخية فقط",
@@ -34,7 +34,7 @@ const I18N = {
     retro: (f) => `عرض استرجاعي: وُلّد بعد انطلاق المباراة (${f.kickoff_london || "غير معروف"}) — ليس توقعًا مسبقًا ولا يدخل تقييم الدقة.`,
     saved: (f, m) => `توقع محفوظ قبل الانطلاق (${f.kickoff_london}) ضمن لقطة ${m.generated_at_utc} — سيُقارن بالنتيجة الفعلية بعد المباراة.`,
     current: (m) => `تقدير ضمن لقطة ${m.generated_at_utc}.`,
-    vsAvg: (d) => d === 0 ? "مطابق لمتوسط الدوري" : (d > 0 ? `أعلى من متوسط الدوري بـ${d} نقطة` : `أقل من متوسط الدوري بـ${-d} نقطة`),
+    leagueRate: "معدل الدوري الحالي لهذا الحدث — مرجع عام، وليس توقعًا مخصصًا لهذه المباراة",
     noFixtures: "لا توجد مباريات قادمة في جدولة المصدر حاليًا. تظهر الجولة التالية هنا فور نشرها (عادة مساء الجمعة لمباريات نهاية الأسبوع) وتشغيل التحديث التلقائي.",
     noResults: "لم تُقيَّم أي توقعات محفوظة بعد. أول مقارنة فعلية تظهر بعد انتهاء أول مباراة وثّقنا توقعها قبل انطلاقها.",
     resForecast: "التوقع قبل المباراة",
@@ -72,7 +72,7 @@ const I18N = {
     title: "Kora Events",
     tagline: "Open-source football match-event analytics",
     freshness: (m) => `Last updated: ${m.generated_at_utc} · data through ${m.to} · ${m.matches} matches this season`,
-    freshsource: "Source: Football-Data (results, events, schedule) — auto-refreshed 4 times a week",
+    freshsource: "Sources: Football-Data (results, events) + openfootball (labeled provisional schedule) — auto-refreshed 4 times a week",
     srcLine: (s) => `Schedule source: ${s}`,
     srcProv: "openfootball — provisional schedule, kickoff time unconfirmed",
     grpTitle: "Try an event group — historical sample only",
@@ -99,7 +99,7 @@ const I18N = {
     retro: (f) => `Retrospective demo: generated after the listed kickoff (${f.kickoff_london || "unknown"}) — not a pre-kickoff forecast, never counted in accuracy.`,
     saved: (f, m) => `Forecast saved before kickoff (${f.kickoff_london}) in the ${m.generated_at_utc} snapshot — it will be compared with the actual result after the match.`,
     current: (m) => `Estimate from the ${m.generated_at_utc} snapshot.`,
-    vsAvg: (d) => d === 0 ? "level with the league average" : (d > 0 ? `${d} pts above the league average` : `${-d} pts below the league average`),
+    leagueRate: "Current league rate for this event — a general reference, not a match-specific forecast",
     noFixtures: "No upcoming fixtures in the source schedule right now. The next round appears here once published (usually Friday evening for weekend matches) and the automatic refresh runs.",
     noResults: "No saved forecasts evaluated yet. The first real comparison appears after the first match whose forecast we recorded before kickoff.",
     resForecast: "Pre-match forecast",
@@ -222,15 +222,14 @@ function scaleWord(p, T) {
 function probRows(f, s, T) {
   return Object.entries(f.probs)
     .map(([e, p]) => {
-      const diff = Math.round((p.model - p.baseline) * 100);
       return `<div class="probrow">
         <div class="probrow-top">
           <span class="lbl">${evLabel(e, s.events[e])}</span>
-          <span class="scale">${scaleWord(p.model, T)}</span>
-          <span class="num">${PCT(p.model)}</span>
+          <span class="scale">${scaleWord(p.prob, T)}</span>
+          <span class="num">${PCT(p.prob)}</span>
         </div>
-        <div class="bar"><span style="width:${Math.round(p.model * 100)}%"></span></div>
-        <div class="sub">${T.vsAvg(diff)}</div>
+        <div class="bar"><span style="width:${Math.round(p.prob * 100)}%"></span></div>
+        <div class="sub">${T.leagueRate}</div>
       </div>`;
     })
     .join("");
