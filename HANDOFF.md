@@ -44,6 +44,23 @@ Light theme, Cairo font, minimal UI. Premier League (E0) 2026/27 only.
 - .github/workflows/update.yml → cron Fri/Tue 17:30 UTC, Sun/Wed 23:00 UTC;
   runs export, commits data/ if changed; manual workflow_dispatch works.
 
+## Results archive (data/archive.json, added 2026-11-24)
+
+- src/build_archive.py parses openfootball/england season files (CC0, public
+  domain) into data/archive.json: 2023-24, 2024-25, 2025-26 complete (380/380
+  each) + 2026-27 partial (50 played). UI: lazy-loaded <details> with
+  season/round selectors, FT + HT scores, home-first reading legend (AR/EN),
+  per-row aria labels, partial-coverage label on the current season.
+- Public per-match history comes ONLY from openfootball (CC0).
+  Football-Data.co.uk per-match rows are never published in any format
+  (match-level raw redistribution is disallowed); FD appears only as derived
+  aggregates and fixture facts.
+- Fidelity verification 2026-11-24: all 3 complete seasons cross-checked
+  380/380 each against FD E0.csv; current-season 50/50. Structural checks:
+  38 rounds x 10 matches per season, 20 distinct teams, no duplicates,
+  valid dates, home != away.
+- Parser note: the 'v' half-time format must be tried before other formats.
+
 ## Forecast log semantics (data/forecast_log.json)
 
 - Key: (date, home, away). First recorded pre-kickoff forecast for a key is
@@ -80,6 +97,9 @@ Light theme, Cairo font, minimal UI. Premier League (E0) 2026/27 only.
    per-card "provisional" badges; football-data.org free tier (one app/domain,
    attribution required, key server-side only) is an approved-pending upgrade
    path once its GTC is read firsthand; defer until needed.
+4. Archive expansion: only EPL seasons are included (3 complete + current
+   partial). openfootball covers other leagues/countries under the same CC0
+   terms if breadth is wanted; update cadence is manual rebuild for now.
 
 ## Operational notes
 
